@@ -30,7 +30,7 @@ class Tilf(QMainWindow):
         self.current_file_path: Optional[str] = None
         self.is_dirty: bool = False
 
-        self.canvas = PixelCanvas(cell_size=self.DEFAULT_ZOOM)
+        self.canvas = PixelCanvas()
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -216,7 +216,6 @@ class Tilf(QMainWindow):
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         if reply == QMessageBox.StandardButton.Yes:
-            self.canvas._push_undo()
             self.canvas.clear_canvas()
 
     def _action_about(self) -> None:

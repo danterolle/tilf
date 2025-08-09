@@ -67,6 +67,7 @@ class PixelCanvas(QWidget):
         self._update_cursor()
 
     def clear_canvas(self, emit_change: bool = True) -> None:
+        self._push_undo()
         self.image.fill(self.base_color)
         self.update()
         if emit_change: self.image_changed.emit()

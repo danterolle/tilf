@@ -28,7 +28,7 @@ class Tilf(QMainWindow):
         self.setAcceptDrops(True)
 
         self.current_file_path: Optional[str] = None
-        self.is_dirty = False
+        self.is_dirty: bool = False
 
         self.canvas = PixelCanvas(cell_size=self.DEFAULT_ZOOM)
         scroll_area = QScrollArea()
@@ -310,7 +310,6 @@ class Tilf(QMainWindow):
             elif "BMP" in selected_filter:
                 file_format = "BMP"
             else: file_format = "PNG"
-
 
         is_transparent = False
         if file_format == "PNG":

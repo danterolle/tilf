@@ -14,25 +14,25 @@ class PixelCanvas(QWidget):
     color_picked = Signal(QColor)
     tool_change_requested = Signal(str)
 
-    def __init__(self, columns: int = 16, rows: int = 16, cell_size: int = 35) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self.image = None
         self.base_color = QColor("white")
-        self.rows = None
-        self.columns = None
-        self.cell_size = cell_size
+        self.rows: int = 16
+        self.columns: int = 16
+        self.cell_size: int = 32
         self.current_color = QColor("black")
         self.grid_color = QColor(80, 80, 80, 160)
-        self.is_grid_visible = True
-        self.current_tool = "pencil"
-        self._is_drawing = False
+        self.is_grid_visible: bool = True
+        self.current_tool: str = "pencil"
+        self._is_drawing: bool = False
         self._undo_stack: List[QImage] = []
         self._redo_stack: List[QImage] = []
-        self._history_limit = 50
+        self._history_limit: int = 50
         self._shape_start_pos: Optional[QPoint] = None
         self._shape_end_pos: Optional[QPoint] = None
         self._preview_image: Optional[QImage] = None
-        self.reset_canvas(columns, rows, clear_history=True)
+        self.reset_canvas(self.columns, self.columns, clear_history=True)
         self._update_cursor()
 
     def reset_canvas(self, columns: int, rows: int, clear_history: bool = False) -> None:

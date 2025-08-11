@@ -48,7 +48,7 @@ class AboutDialog(QDialog):
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.setSpacing(10)
 
-        icon_path = 'resources/logo.png'
+        icon_path = 'assets/logo.png'
         icon_label = QLabel()
 
         if os.path.exists(icon_path):

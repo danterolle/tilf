@@ -10,7 +10,7 @@ def main() -> None:
     app.setApplicationName("Tilf - Pixel Art Editor")
     app.setQuitOnLastWindowClosed(True)
 
-    app_icon_path = resource_path("resources/icon.icns")
+    app_icon_path = resource_path("assets/icon.icns")
     if os.path.exists(app_icon_path):
         app.setWindowIcon(QIcon(app_icon_path))
 

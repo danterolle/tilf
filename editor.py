@@ -107,19 +107,19 @@ class Tilf(QMainWindow):
 
         actions_data: List[Dict[str, Any]] = [
             {
-                "custom_icon": resource_path("resources/icons/file.png"),
+                "custom_icon": resource_path("assets/icons/file.png"),
                 "text": "New",
                 "shortcut": "Ctrl+N",
                 "handler": self._action_new
             },
             {
-                "custom_icon": resource_path("resources/icons/open.png"),
+                "custom_icon": resource_path("assets/icons/open.png"),
                 "text": "Open",
                 "shortcut": "Ctrl+O",
                 "handler": self._action_open
             },
             {
-                "custom_icon": resource_path("resources/icons/save.png"),
+                "custom_icon": resource_path("assets/icons/save.png"),
                 "text": "Save",
                 "shortcut": "Ctrl+S",
                 "handler": self._action_save
@@ -128,13 +128,13 @@ class Tilf(QMainWindow):
                 "sep": True
             },
             {
-                "custom_icon": resource_path("resources/icons/arrow_back.png"),
+                "custom_icon": resource_path("assets/icons/arrow_back.png"),
                 "text": "Undo",
                 "shortcut": "Ctrl+Z",
                 "handler": self.canvas.undo
             },
             {
-                "custom_icon": resource_path("resources/icons/arrow_forward.png"),
+                "custom_icon": resource_path("assets/icons/arrow_forward.png"),
                 "text": "Redo",
                 "shortcut": "Ctrl+Y",
                 "handler": self.canvas.redo
@@ -143,42 +143,42 @@ class Tilf(QMainWindow):
                 "sep": True
             },
             {
-                "custom_icon": resource_path("resources/icons/pencil.png"),
+                "custom_icon": resource_path("assets/icons/pencil.png"),
                 "text": "Pencil",
                 "shortcut": "B",
                 "checkable": True,
                 "tool": "pencil"
             },
             {
-                "custom_icon": resource_path("resources/icons/eraser.png"),
+                "custom_icon": resource_path("assets/icons/eraser.png"),
                 "text": "Eraser",
                 "shortcut": "E",
                 "checkable": True,
                 "tool": "eraser"
             },
             {
-                "custom_icon": resource_path("resources/icons/bucket.png"),
+                "custom_icon": resource_path("assets/icons/bucket.png"),
                 "text": "Bucket",
                 "shortcut": "G",
                 "checkable": True,
                 "tool": "fill"
             },
             {
-                "custom_icon": resource_path("resources/icons/picker.png"),
+                "custom_icon": resource_path("assets/icons/picker.png"),
                 "text": "Picker",
                 "shortcut": "I",
                 "checkable": True,
                 "tool": "eyedropper"
             },
             {
-                "custom_icon": resource_path("resources/icons/square.png"),
+                "custom_icon": resource_path("assets/icons/square.png"),
                 "text": "Square",
                 "shortcut": "R",
                 "checkable": True,
                 "tool": "rect"
             },
             {
-                "custom_icon": resource_path("resources/icons/circle.png"),
+                "custom_icon": resource_path("assets/icons/circle.png"),
                 "text": "Circle",
                 "shortcut": "C",
                 "checkable": True,
@@ -188,19 +188,19 @@ class Tilf(QMainWindow):
                 "sep": True
             },
             {
-                "custom_icon": resource_path("resources/icons/color.png"),
+                "custom_icon": resource_path("assets/icons/color.png"),
                 "text": "Color",
                 "handler": self._choose_color,
                 "tooltip": "Choose brush color"
             },
             {
-                "custom_icon": resource_path("resources/icons/background.png"),
+                "custom_icon": resource_path("assets/icons/background.png"),
                 "text": "Background",
                 "handler": self._choose_background_color,
                 "tooltip": "Choose canvas background color"
             },
             {
-                "custom_icon": resource_path("resources/icons/clear.png"),
+                "custom_icon": resource_path("assets/icons/clear.png"),
                 "text": "Clear",
                 "handler": self._action_clear,
                 "tooltip": "Clear canvas"
@@ -209,14 +209,14 @@ class Tilf(QMainWindow):
                 "sep": True
             },
             {
-                "custom_icon": resource_path("resources/icons/grid.png"),
+                "custom_icon": resource_path("assets/icons/grid.png"),
                 "text": "Grid",
                 "checkable": True,
                 "checked": self.canvas.is_grid_visible,
                 "handler": self._toggle_grid
             },
             {
-                "custom_icon": resource_path("resources/icons/grid_color.png"),
+                "custom_icon": resource_path("assets/icons/grid_color.png"),
                 "text": "Grid color",
                 "handler": self._choose_grid_color
             },
@@ -224,7 +224,7 @@ class Tilf(QMainWindow):
                 "sep": True
             },
             {
-                "custom_icon": resource_path("resources/logo.png"),
+                "custom_icon": resource_path("assets/logo.png"),
                 "text": "About Tilf",
                 "handler": self._action_about,
                 "tooltip": "About Tilf"

@@ -48,15 +48,15 @@ class AboutDialog(QDialog):
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.setSpacing(10)
 
-        icon_path = 'resources/tilf.png'
+        icon_path = 'resources/logo.png'
         icon_label = QLabel()
 
         if os.path.exists(icon_path):
             pixmap = QPixmap(icon_path)
             icon_label.setPixmap(
                 pixmap.scaled(
-                    64,
-                    64,
+                    80,
+                    80,
                     Qt.AspectRatioMode.KeepAspectRatio,
                     Qt.TransformationMode.SmoothTransformation
                 )

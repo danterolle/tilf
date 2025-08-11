@@ -11,11 +11,12 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QToolBar, QStatusBar, QColorDialog,
     QFileDialog, QScrollArea, QMessageBox, QLabel, QSlider,
-    QStyle, QHBoxLayout, QDockWidget, QVBoxLayout, QPushButton
+    QHBoxLayout, QDockWidget, QVBoxLayout, QPushButton
 )
 
 from pixel_canvas import PixelCanvas
 from dialogs import NewImageDialog, AboutDialog
+from helper import resource_path
 
 
 class Tilf(QMainWindow):
@@ -90,11 +91,14 @@ class Tilf(QMainWindow):
 
         dock = QDockWidget("Preview", self)
         dock.setWidget(container)
-        dock.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable | QDockWidget.DockWidgetFeature.DockWidgetMovable)
+        dock.setFeatures(
+            QDockWidget.DockWidgetFeature.DockWidgetMovable |
+            QDockWidget.DockWidgetFeature.DockWidgetMovable
+        )
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
 
     def _create_toolbar(self) -> None:
-        toolbar = QToolBar("Main Toolbar")
+        toolbar = QToolBar("Menu")
         toolbar.setIconSize(QSize(24, 24))
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
         toolbar.setMovable(False)
@@ -102,36 +106,129 @@ class Tilf(QMainWindow):
         style = self.style()
 
         actions_data: List[Dict[str, Any]] = [
-            {"icon": QStyle.StandardPixmap.SP_FileIcon, "text": "New", "shortcut": "Ctrl+N", "handler": self._action_new},
-            {"icon": QStyle.StandardPixmap.SP_DirOpenIcon, "text": "Open", "shortcut": "Ctrl+O", "handler": self._action_open},
-            {"icon": QStyle.StandardPixmap.SP_DialogSaveButton, "text": "Save", "shortcut": "Ctrl+S", "handler": self._action_save},
-            {"sep": True},
-            {"icon": QStyle.StandardPixmap.SP_ArrowBack, "text": "Undo", "shortcut": "Ctrl+Z", "handler": self.canvas.undo},
-            {"icon": QStyle.StandardPixmap.SP_ArrowForward, "text": "Redo", "shortcut": "Ctrl+Y", "handler": self.canvas.redo},
-            {"sep": True},
-            {"icon": QStyle.StandardPixmap.SP_DialogApplyButton, "text": "Pencil", "shortcut": "B", "checkable": True,
-             "tool": "pencil"},
-            {"icon": QStyle.StandardPixmap.SP_DialogResetButton, "text": "Eraser", "shortcut": "E", "checkable": True,
-             "tool": "eraser"},
-            {"icon_str": "bucket", "text": "Bucket", "shortcut": "G", "checkable": True, "tool": "fill"},
-            {"icon_str": "eyedropper", "text": "Picker", "shortcut": "I", "checkable": True, "tool": "eyedropper"},
-            {"icon": QStyle.StandardPixmap.SP_FileDialogDetailedView, "text": "Square", "shortcut": "R", "checkable": True,
-             "tool": "rect"},
-            {"icon": QStyle.StandardPixmap.SP_DialogHelpButton, "text": "Circle", "shortcut": "C", "checkable": True,
-             "tool": "ellipse"},
-            {"sep": True},
-            {"icon": QStyle.StandardPixmap.SP_DriveDVDIcon, "text": "Color", "handler": self._choose_color,
-             "tooltip": "Choose Brush Color"},
-            {"icon": QStyle.StandardPixmap.SP_DesktopIcon, "text": "Background", "handler": self._choose_background_color,
-             "tooltip": "Choose canvas background color"},
-            {"icon": QStyle.StandardPixmap.SP_TrashIcon, "text": "Clear", "handler": self._action_clear, "tooltip": "Clear Canvas"},
-            {"sep": True},
-            {"icon": QStyle.StandardPixmap.SP_BrowserReload, "text": "Grid", "checkable": True, "checked": self.canvas.is_grid_visible,
-             "handler": self._toggle_grid},
-            {"icon": QStyle.StandardPixmap.SP_DriveNetIcon, "text": "Grid Color", "handler": self._choose_grid_color},
-            {"sep": True},
-            {"icon": QStyle.StandardPixmap.SP_MessageBoxInformation, "text": "About", "handler": self._action_about,
-             "tooltip": "About this application"},
+            {
+                "custom_icon": resource_path("resources/icons/file.png"),
+                "text": "New",
+                "shortcut": "Ctrl+N",
+                "handler": self._action_new
+            },
+            {
+                "custom_icon": resource_path("resources/icons/open.png"),
+                "text": "Open",
+                "shortcut": "Ctrl+O",
+                "handler": self._action_open
+            },
+            {
+                "custom_icon": resource_path("resources/icons/save.png"),
+                "text": "Save",
+                "shortcut": "Ctrl+S",
+                "handler": self._action_save
+            },
+            {
+                "sep": True
+            },
+            {
+                "custom_icon": resource_path("resources/icons/arrow_back.png"),
+                "text": "Undo",
+                "shortcut": "Ctrl+Z",
+                "handler": self.canvas.undo
+            },
+            {
+                "custom_icon": resource_path("resources/icons/arrow_forward.png"),
+                "text": "Redo",
+                "shortcut": "Ctrl+Y",
+                "handler": self.canvas.redo
+            },
+            {
+                "sep": True
+            },
+            {
+                "custom_icon": resource_path("resources/icons/pencil.png"),
+                "text": "Pencil",
+                "shortcut": "B",
+                "checkable": True,
+                "tool": "pencil"
+            },
+            {
+                "custom_icon": resource_path("resources/icons/eraser.png"),
+                "text": "Eraser",
+                "shortcut": "E",
+                "checkable": True,
+                "tool": "eraser"
+            },
+            {
+                "custom_icon": resource_path("resources/icons/bucket.png"),
+                "text": "Bucket",
+                "shortcut": "G",
+                "checkable": True,
+                "tool": "fill"
+            },
+            {
+                "custom_icon": resource_path("resources/icons/picker.png"),
+                "text": "Picker",
+                "shortcut": "I",
+                "checkable": True,
+                "tool": "eyedropper"
+            },
+            {
+                "custom_icon": resource_path("resources/icons/square.png"),
+                "text": "Square",
+                "shortcut": "R",
+                "checkable": True,
+                "tool": "rect"
+            },
+            {
+                "custom_icon": resource_path("resources/icons/circle.png"),
+                "text": "Circle",
+                "shortcut": "C",
+                "checkable": True,
+                "tool": "ellipse"
+            },
+            {
+                "sep": True
+            },
+            {
+                "custom_icon": resource_path("resources/icons/color.png"),
+                "text": "Color",
+                "handler": self._choose_color,
+                "tooltip": "Choose brush color"
+            },
+            {
+                "custom_icon": resource_path("resources/icons/background.png"),
+                "text": "Background",
+                "handler": self._choose_background_color,
+                "tooltip": "Choose canvas background color"
+            },
+            {
+                "custom_icon": resource_path("resources/icons/clear.png"),
+                "text": "Clear",
+                "handler": self._action_clear,
+                "tooltip": "Clear canvas"
+            },
+            {
+                "sep": True
+            },
+            {
+                "custom_icon": resource_path("resources/icons/grid.png"),
+                "text": "Grid",
+                "checkable": True,
+                "checked": self.canvas.is_grid_visible,
+                "handler": self._toggle_grid
+            },
+            {
+                "custom_icon": resource_path("resources/icons/grid_color.png"),
+                "text": "Grid color",
+                "handler": self._choose_grid_color
+            },
+            {
+                "sep": True
+            },
+            {
+                "custom_icon": resource_path("resources/logo.png"),
+                "text": "About Tilf",
+                "handler": self._action_about,
+                "tooltip": "About Tilf"
+            },
         ]
 
         tools_group = QActionGroup(self)
@@ -140,7 +237,11 @@ class Tilf(QMainWindow):
         for data in actions_data:
             if data.get("sep"): toolbar.addSeparator(); continue
 
-            icon = style.standardIcon(data["icon"]) if "icon" in data else QIcon()
+            icon = QIcon()
+            if "std_icon" in data:
+                icon = style.standardIcon(data["std_icon"])
+            elif "custom_icon" in data:
+                icon = QIcon(data["custom_icon"])
 
             action = QAction(icon, data["text"], self)
             if "shortcut" in data: action.setShortcut(QKeySequence(data["shortcut"]))
@@ -226,7 +327,12 @@ class Tilf(QMainWindow):
         if color.isValid(): self.canvas.current_color = color
 
     def _choose_background_color(self) -> None:
-        color = QColorDialog.getColor(self.canvas.base_color, self, "Choose Background Color")
+        color = QColorDialog.getColor(
+            self.canvas.base_color,
+            self,
+            "Choose Background Color",
+            QColorDialog.ColorDialogOption.ShowAlphaChannel
+        )
         if color.isValid():
             self.canvas.set_background_color(color)
 

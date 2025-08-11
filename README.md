@@ -3,6 +3,8 @@
 Tilf (Tiny Elf) is a simple yet powerful pixel art editor built with PySide6.
 It’s designed for creating sprites, icons, and small 2D assets with essential tools, live preview, undo/redo, and export options.
 
+![Tilf](./assets/icon.ico "Tilf")
+
 There are several Pixel Art Editors that do the same things and even much more, 
 but many require an account registration or the insertion of an e-mail or have a certain business model.
 

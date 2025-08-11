@@ -1,0 +1,122 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*'
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m venv env
+        source env/bin/activate || .\\env\\Scripts\\activate
+        pip install --upgrade pip
+        pip install pyside6 pyinstaller
+
+    - name: Build the application
+      shell: bash
+      run: |
+        # Attiva l'ambiente virtuale in modo compatibile
+        source env/bin/activate || source env/Scripts/activate
+        
+        # Imposta l'icona corretta in base al sistema operativo
+        ICON_ARG="--icon=assets/icon.ico"
+        if [ "${{ runner.os }}" == "macOS" ]; then
+          ICON_ARG="--icon=assets/icon.icns"
+        fi
+        
+        echo "Building for ${{ runner.os }} with argument: $ICON_ARG"
+        
+        # Esegue PyInstaller con l'icona corretta
+        pyinstaller --name tilf \
+                    --onefile \
+                    --windowed \
+                    $ICON_ARG \
+                    --add-data "assets:assets" \
+                    --add-data "style.qss:." \
+                    main.py
+
+    - name: Prepare artifacts for upload
+      shell: bash
+      run: |
+        mkdir -p artifacts
+        if [ "${{ runner.os }}" == "Linux" ]; then
+          mv dist/tilf artifacts/tilf-linux
+        elif [ "${{ runner.os }}" == "macOS" ]; then
+          mv dist/tilf artifacts/tilf-macos
+        elif [ "${{ runner.os }}" == "Windows" ]; then
+          mv dist/tilf.exe artifacts/tilf-windows.exe
+        fi
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: tilf-${{ runner.os }}
+        path: artifacts/
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts/
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: false
+
+      - name: Upload Linux Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/tilf-Linux/tilf-linux
+          asset_name: tilf-linux
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/tilf-macOS/tilf-macos
+          asset_name: tilf-macos
+          asset_content_type: application/octet-stream
+          
+      - name: Upload Windows Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/tilf-Windows/tilf-windows.exe
+          asset_name: tilf-windows.exe
+          asset_content_type: application/vnd.microsoft.portable-executable

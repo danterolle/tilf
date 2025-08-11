@@ -1,1 +1,140 @@
-# tilf
+# Tilf — Pixel Art Editor
+
+Tilf (Tiny Elf) is a simple yet powerful pixel art editor built with PySide6.
+It’s designed for creating sprites, icons, and small 2D assets with essential tools, live preview, undo/redo, and export options.
+
+There are several Pixel Art Editors that do the same things and even much more, 
+but many require an account registration or the insertion of an e-mail or have a certain business model.
+
+I'm _not_ interested in all that, my goal is to be able to create sprites freely, with (almost) zero dependencies, 
+zero setup time, zero installations:
+
+Tilf starts and I begin to draw what I want.
+
+It runs on Windows, MacOS, and GNU/Linux.
+
+I haven't taken code quality into account, I know, although I would like to improve it. 
+It's a project I wrote in my spare time. 
+Many things are poorly written and there is certainly ample room for improvement, 
+which is why I gladly accept PRs if anyone is willing.
+
+## Features
+
+- Drawing tools:
+  - Pencil
+  - Eraser
+  - Fill (bucket)
+  - Eyedropper
+  - Rectangle (stroke)
+  - Ellipse (stroke)
+- Canvas:
+  - New image with custom dimensions
+  - Zoom 1–50x (mouse wheel or slider)
+  - Editable background color (alpha supported)
+  - Optional grid with customizable color
+  - Clear canvas
+- Workflow:
+  - Undo/Redo with history up to 50 states
+  - Drag & drop images to open
+  - Real-time preview in a side dock (you can move it wherever you want)
+- Import/Export:
+  - Open PNG, JPEG/JPG, BMP
+  - Export to PNG (with or without transparency), JPEG/JPG, BMP
+- Handy details:
+  - Hold Shift while drawing rectangles/ellipses to constrain to squares/circles
+  - Grid is shown when zoom (cell size) is at least 4
+
+## Requirements
+
+- Python 3, virtualenv
+- OS: Windows, MacOS or GNULinux
+- Dependencies:
+  - PySide6
+  - PyInstaller
+
+I did not use uv or poetry for this project; 
+I don't think it is necessary to introduce a tool of that kind for a project that is, all things considered, simple.
+
+## Build
+
+1) Clone the repository:
+
+```
+git clone https://github.com/danterolle/tilf.git
+```
+
+```
+cd tilf
+```
+2) This project has a [Makefile](https://github.com/danterolle/tilf/blob/main/Makefile) 
+that automates all the necessary build and cleanup operations for Tilf, so we just need to run:
+
+```
+make
+```
+
+3) The executable will be in the `dist` folder.```
+
+```
+./tilf
+```
+
+## Keyboard Shortcuts for file operations
+
+- File:
+  - New: Ctrl+N
+  - Open: Ctrl+O
+  - Save: Ctrl+S
+- Edit:
+  - Undo: Ctrl+Z
+  - Redo: Ctrl+Y
+- Tools:
+  - Pencil: B
+  - Eraser: E
+  - Bucket: G
+  - Eyedropper: I
+  - Rectangle: R
+  - Ellipse: C
+- Shapes:
+  - Constrain to square/circle: hold Shift
+
+## Save and Auto-Save
+
+- Export formats:
+  - PNG: optionally keep transparency.
+  - JPEG/JPG, BMP: no transparency.
+
+On close, if there are unsaved changes, a recovery *.png* is automatically saved into a **tilf_autosaves**
+folder next to the startup script, with a timestamped filename.
+
+## Tips and Known Limits
+
+- [Undo/Redo history is capped at 50 states to limit memory usage](https://github.com/danterolle/tilf/blob/main/pixel_canvas.py#L31).
+- Large flood fills may take longer on big images.
+- The grid appears when zoom (cell size) is at least 4.
+- Very large images may impact performance; Remember: *Tilf targets compact pixel art and sprites*.
+
+## Troubleshooting
+
+### ModuleNotFoundError: No module named 'PySide6'
+
+Ensure your virtualenv is active and run: pip install pyside6
+
+### DPI/Scaling issues
+
+Consider adjusting Qt high-DPI environment variables (e.g. QT_SCALE_FACTOR) according to your system.
+
+## Contributing
+
+- Open issues for bugs or feature requests.
+- For PRs, please keep the code style consistent and explain changes clearly.
+- Feature ideas are welcome (e.g. advanced fills, selections, layers). Thank you!
+
+## License
+
+GPL v3.0, see the LICENSE file for details.
+
+## Contact
+
+- Developer: Dario 'danterolle' Camonita
+- E-mail: danterolle@catania.linux.it

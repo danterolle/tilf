@@ -13,9 +13,12 @@ Tilf starts and I begin to draw what I want.
 
 It runs on Windows, MacOS, and GNU/Linux.
 
-![Tilf on MacOS](./screenshots/macos.png "MacOS")
-![Tilf on GNU/Linux](./screenshots/linux.png "GNU/Linux")
+**Windows 11**
 ![Tilf on Windows](./screenshots/windows.png "Windows")
+**MacOS 15.6**
+![Tilf on MacOS](./screenshots/macos.png "MacOS")
+**GNU/Linux (ParrotOS 6.4)**
+![Tilf on GNU/Linux](./screenshots/linux.png "GNU/Linux")
 
 I’m aware that the code quality isn’t great.
 I didn’t prioritize it when writing this.

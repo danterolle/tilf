@@ -2,7 +2,7 @@ import os
 from typing import Tuple
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap, QIcon
 from PySide6.QtWidgets import (
     QDialog, QFormLayout, QSpinBox, QPushButton, QHBoxLayout,
     QVBoxLayout, QLabel, QWidget
@@ -14,6 +14,7 @@ class NewImageDialog(QDialog):
     def __init__(self, parent: QWidget = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("New Image")
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowCloseButtonHint)
         layout = QFormLayout(self)
 
         self.width_spinbox = QSpinBox()
@@ -43,7 +44,7 @@ class AboutDialog(QDialog):
     def __init__(self, parent: QWidget = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("About Tilf")
-        self.setFixedSize(480, 320)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowCloseButtonHint)
 
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -75,9 +76,10 @@ class AboutDialog(QDialog):
             "pixel-level precision.<br>"
             "<br>It features essential tools like a pencil, fill bucket, and shapes, along with a grid system to "
             "easily create sprites and small tiles.<br>"
-            "<br>PRs are welcome.<br>"
-            "<br><a href="f'https://github.com/danterolle/tilf'">https://github.com/danterolle/tilf</a><br>"
+            "<br><a href="f'https://github.com/danterolle/tilf'">PRs are welcome.</a><br>"
             "<br>Thank you for using this tool!<br>"
+            "<br>Created by Dario 'danterolle' Camonita<br>"
+            "<br>Email: danterolle@catania.linux.it<br>"
         )
         info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         info_label.setOpenExternalLinks(True)

@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QDialog, QFormLayout, QSpinBox, QPushButton, QHBoxLayout,
     QVBoxLayout, QLabel, QWidget
 )
+from helper import resource_path
 
 
 class NewImageDialog(QDialog):
@@ -48,7 +49,7 @@ class AboutDialog(QDialog):
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.setSpacing(10)
 
-        icon_path = 'assets/logo.png'
+        icon_path = resource_path("assets/logo.png")
         icon_label = QLabel()
 
         if os.path.exists(icon_path):

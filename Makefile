@@ -7,18 +7,18 @@ STYLESHEET_FILE = style.qss
 ifeq ($(OS),Windows_NT)
     PYINSTALLER_DATA_SEP = ;
     PYTHON = $(VENV_DIR)/Scripts/python
-    ICON_FILE = $(RESOURCES_DIR)/icons/icon.ico
+    ICON_FILE = $(RESOURCES_DIR)/icon.ico
 else
     PYINSTALLER_DATA_SEP = :
     PYTHON = $(VENV_DIR)/bin/python
     ifeq ($(shell uname), Darwin)
-        ICON_FILE = $(RESOURCES_DIR)/icons/icon.icns
+        ICON_FILE = $(RESOURCES_DIR)/icon.icns
     else
-        ICON_FILE = $(RESOURCES_DIR)/icons/icon.ico
+        ICON_FILE = $(RESOURCES_DIR)/icon.ico
     endif
 endif
 
-.PHONY: all build clean run install requirements
+.PHONY: all build clean run install
 
 all: build
 
@@ -31,7 +31,7 @@ $(VENV_DIR)/touchfile: requirements.txt
 	$(PYTHON) -m pip install -r requirements.txt
 	@touch $(VENV_DIR)/touchfile
 
-requirements:
+requirements.txt:
 	@echo "Generating requirements.txt..."
 	@echo "pyside6" > requirements.txt
 	@echo "pyinstaller" >> requirements.txt

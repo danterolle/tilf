@@ -17,10 +17,27 @@ It runs on Windows, MacOS, and GNU/Linux.
 ![Tilf on GNU/Linux](./screenshots/linux.png "GNU/Linux")
 ![Tilf on Windows](./screenshots/windows.png "Windows")
 
-I haven't taken code quality into account, I know, although I would like to improve it. 
-It's a project I wrote in my spare time. 
-Many things are poorly written and there is certainly ample room for improvement, 
-which is why I gladly accept PRs if anyone is willing.
+I’m aware that the code quality isn’t great.
+I didn’t prioritize it when writing this.
+This project was something I put together during my spare time, and a lot of it could be written much better. 
+There's definitely room for improvement, so I'm more than happy to accept PRs from anyone willing to contribute.
+
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Build on MacOS and GNU/Linux](#build-on-macos-and-gnulinux)
+- [About Windows](#about-windows)
+  - [Run from source](#run-from-source)
+  - [Build executable .exe](#build-executable-exe)
+- [Keyboard Shortcuts for file operations](#keyboard-shortcuts-for-file-operations)
+- [Save and Auto-Save](#save-and-auto-save)
+- [Tips and Known Limits](#tips-and-known-limits)
+- [Troubleshooting - Work In Progress](#troubleshooting---work-in-progress)
+  - [ModuleNotFoundError: No module named 'PySide6'](#modulenotfounderror-no-module-named-pyside6)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
 ## Features
 

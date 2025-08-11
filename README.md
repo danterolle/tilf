@@ -81,12 +81,9 @@ I don't think it is necessary to introduce a tool of that kind for a project tha
 1) Clone the repository:
 
 ```
-git clone https://github.com/danterolle/tilf.git
+git clone https://github.com/danterolle/tilf.git && cd tilf
 ```
 
-```
-cd tilf
-```
 2) This project has a [Makefile](https://github.com/danterolle/tilf/blob/main/Makefile) 
 that automates all the necessary build and cleanup operations for Tilf (for MacOS and GNU/Linux only), so we just need to run:
 
@@ -99,6 +96,8 @@ make
 ```
 ./tilf
 ```
+
+Enjoy!
 
 ## About Windows
 
@@ -130,6 +129,8 @@ py.exe -m venv env
 ```
 pip install pyside6 pyinstaller pillow
 ```
+
+Note: 
 
 5) And finally, run the application:
 

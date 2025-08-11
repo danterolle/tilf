@@ -63,7 +63,7 @@ class Tilf(QMainWindow):
         zoom_slider.setFixedWidth(150)
 
         reset_button = QPushButton("Reset Zoom")
-        reset_button.setFixedWidth(80)
+        reset_button.setFixedWidth(100)
         reset_button.setToolTip(f"Reset zoom to {self.DEFAULT_ZOOM}x")
 
         zoom_layout.addWidget(zoom_slider)

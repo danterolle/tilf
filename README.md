@@ -13,6 +13,10 @@ Tilf starts and I begin to draw what I want.
 
 It runs on Windows, MacOS, and GNU/Linux.
 
+![Tilf on MacOS](./screenshots/macos.png "MacOS")
+![Tilf on GNU/Linux](./screenshots/linux.png "GNU/Linux")
+![Tilf on Windows](./screenshots/windows.png "Windows")
+
 I haven't taken code quality into account, I know, although I would like to improve it. 
 It's a project I wrote in my spare time. 
 Many things are poorly written and there is certainly ample room for improvement, 
@@ -55,7 +59,7 @@ which is why I gladly accept PRs if anyone is willing.
 I did not use uv or poetry for this project; 
 I don't think it is necessary to introduce a tool of that kind for a project that is, all things considered, simple.
 
-## Build
+## Build on MacOS and GNU/Linux
 
 1) Clone the repository:
 
@@ -67,13 +71,82 @@ git clone https://github.com/danterolle/tilf.git
 cd tilf
 ```
 2) This project has a [Makefile](https://github.com/danterolle/tilf/blob/main/Makefile) 
-that automates all the necessary build and cleanup operations for Tilf, so we just need to run:
+that automates all the necessary build and cleanup operations for Tilf (for MacOS and GNU/Linux only), so we just need to run:
 
 ```
 make
 ```
 
-3) The executable will be in the `dist` folder.```
+3) The executable will be in the `dist` folder.
+
+```
+./tilf
+```
+
+## About Windows
+
+### Run from source
+
+1) Clone the repository by using Git Bash:
+
+```
+git clone https://github.com/danterolle/tilf.git
+```
+```
+cd tilf
+```
+
+2) Create a virtual environment:
+
+```
+py.exe -m venv env
+```
+
+3) Activate the virtual environment:
+
+```
+./env/Scripts/activate
+```
+
+4) Install the dependencies:
+
+```
+pip install pyside6 pyinstaller pillow
+```
+
+5) And finally, run the application:
+
+```
+py.exe ./main.py
+```
+
+### Build executable .exe
+
+1) Clone the repository by using Git Bash:
+
+```
+git clone https://github.com/danterolle/tilf.git
+```
+```
+cd tilf
+```
+
+```
+./env/Scripts/activate
+```
+
+2) Install the dependencies:
+```
+pip install pyside6 pyinstaller pillow
+```
+
+3) Run PyInstaller:
+
+```
+pyinstaller --name tilf --onefile --windowed --icon assets/icon.icns --add-data assets:assets --add-data style.qss:. main.py
+```
+
+4) The executable will be in the `dist` folder.
 
 ```
 ./tilf
@@ -114,15 +187,11 @@ folder next to the startup script, with a timestamped filename.
 - The grid appears when zoom (cell size) is at least 4.
 - Very large images may impact performance; Remember: *Tilf targets compact pixel art and sprites*.
 
-## Troubleshooting
+## Troubleshooting - Work In Progress
 
 ### ModuleNotFoundError: No module named 'PySide6'
 
 Ensure your virtualenv is active and run: pip install pyside6
-
-### DPI/Scaling issues
-
-Consider adjusting Qt high-DPI environment variables (e.g. QT_SCALE_FACTOR) according to your system.
 
 ## Contributing
 

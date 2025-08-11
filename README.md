@@ -11,19 +11,26 @@ zero setup time, zero installations:
 
 Tilf starts and I begin to draw what I want.
 
-It runs on Windows, MacOS, and GNU/Linux.
+It runs on Windows, MacOS and GNU/Linux.
 
-**Windows 11**
+Download the latest release from the [releases page](https://github.com/danterolle/tilf/releases).
+
+**Windows 11** -> [Download](https://github.com/danterolle/tilf/releases/download/v0.1/tilf_0.1-Windows)
 ![Tilf on Windows](./screenshots/windows.png "Windows")
-**MacOS 15.6**
+**MacOS 15.6** -> [Download](https://github.com/danterolle/tilf/releases/download/v0.1/tilf_0.1-MacOS.zip)
 ![Tilf on MacOS](./screenshots/macos.png "MacOS")
-**GNU/Linux (ParrotOS 6.4)**
+**GNU/Linux (ParrotOS 6.4)** -> [Download](https://github.com/danterolle/tilf/releases/download/v0.1/tilf_0.1-Linux)
 ![Tilf on GNU/Linux](./screenshots/linux.png "GNU/Linux")
 
 I’m aware that the code quality isn’t great.
 I didn’t prioritize it when writing this.
 This project was something I put together during my spare time, and a lot of it could be written much better. 
 There's definitely room for improvement, so I'm more than happy to accept PRs from anyone willing to contribute.
+
+#### Why doesn't this tool have many commits?
+
+Because I mainly used it for learning and personal purposes. 
+Publish it as an Open Source project might be interesting for others as well.
 
 ## Table of Contents
 

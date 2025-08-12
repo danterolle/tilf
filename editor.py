@@ -224,6 +224,16 @@ class Tilf(QMainWindow):
                 "sep": True
             },
             {
+                "custom_icon": resource_path("assets/icons/shift.png"),
+                "text": "Shift",
+                "shortcut": "S",
+                "handler": self._shift_canvas,
+                "tooltip": "Shift canvas up, down, left, or right."
+            },
+            {
+                "sep": True
+            },
+            {
                 "custom_icon": resource_path("assets/logo.png"),
                 "text": "About Tilf",
                 "handler": self._action_about,
@@ -341,6 +351,9 @@ class Tilf(QMainWindow):
         if color.isValid():
             self.canvas.grid_color = color
             self.canvas.update()
+
+    def _shift_canvas(self) -> None:
+            pass
 
     def _toggle_grid(self, checked: bool) -> None:
         self.canvas.is_grid_visible = checked

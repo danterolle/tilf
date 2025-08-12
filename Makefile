@@ -3,19 +3,13 @@ MAIN_SCRIPT = main.py
 VENV_DIR = env
 RESOURCES_DIR = assets
 STYLESHEET_FILE = style.qss
+PYINSTALLER_DATA_SEP = :
+PYTHON = $(VENV_DIR)/bin/python
 
-ifeq ($(OS),Windows_NT)
-    PYINSTALLER_DATA_SEP = ;
-    PYTHON = $(VENV_DIR)/Scripts/python
-    ICON_FILE = $(RESOURCES_DIR)/icon.ico
+ifeq ($(shell uname), Darwin)
+	ICON_FILE = $(RESOURCES_DIR)/icon.icns
 else
-    PYINSTALLER_DATA_SEP = :
-    PYTHON = $(VENV_DIR)/bin/python
-    ifeq ($(shell uname), Darwin)
-        ICON_FILE = $(RESOURCES_DIR)/icon.icns
-    else
-        ICON_FILE = $(RESOURCES_DIR)/icon.ico
-    endif
+	ICON_FILE = $(RESOURCES_DIR)/icon.ico
 endif
 
 .PHONY: all build clean run install

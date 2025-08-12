@@ -100,14 +100,13 @@ class MultipleChoiceDialog(QDialog):
         self.setWindowTitle(title)
         self.question = question
         self.options = options
+        self.option_group = []
         self.selected_option = None
         self._create_option_selector()
 
     def _create_option_selector(self):
         layout = QVBoxLayout()
         question_label = QLabel(self.question)
-        self.option_group = []
-
         layout.addWidget(question_label)
 
         for option in self.options:
@@ -124,7 +123,6 @@ class MultipleChoiceDialog(QDialog):
 
     def _update_selected_option(self):
         self.selected_option = None
-
         for radio_button in self.option_group:
             if radio_button.isChecked():
                 self.selected_option = radio_button.text()

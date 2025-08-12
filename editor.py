@@ -11,12 +11,11 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QToolBar, QStatusBar, QColorDialog,
     QFileDialog, QScrollArea, QMessageBox, QLabel, QSlider,
-    QHBoxLayout, QDockWidget, QVBoxLayout, QPushButton, QDialog,
-    QRadioButton, QDialogButtonBox
+    QHBoxLayout, QDockWidget, QVBoxLayout, QPushButton
 )
 
 from pixel_canvas import PixelCanvas
-from dialogs import NewImageDialog, AboutDialog
+from dialogs import NewImageDialog, AboutDialog, MultipleChoiceDialog
 from helper import resource_path
 
 
@@ -354,34 +353,14 @@ class Tilf(QMainWindow):
             self.canvas.update()
 
     def _shift_canvas(self) -> None:
-        shift_options = [
-            {
-                "option": "Left",
-                "handler": self._action_about
-            },
-            {
-                "option": "Right",
-                "handler": self._action_about
-            },
-            {
-                "option": "Top",
-                "handler": self._action_about
-            },
-            {
-                "option": "Bottom",
-                "handler": self._action_about
-            }
-        ]
-        shift_selection_dialog = MultipleChoiceDialog("Shift Canvas", "Shift canvas 1px to the:", ['Left', 'Right', "Top", "Bottom"], self)
-
+        shift_options = ["Left", "Right", "Top", "Bottom"]
+        shift_selection_dialog = MultipleChoiceDialog("Shift Canvas", "Shift canvas 1px to the:", shift_options, self)
         if shift_selection_dialog.exec():
             selected_option = shift_selection_dialog.get_selected_option()
-
             if not selected_option:
                 pass
             else:
-                option = next(item for item in shift_options if item["option"] == selected_option)
-                option["handler"]()
+                self.canvas.shift_image(selected_option)
 
 
     def _toggle_grid(self, checked: bool) -> None:
@@ -498,42 +477,3 @@ class Tilf(QMainWindow):
             except Exception as e:
                 print(f"Error during autosave: {e}", file=sys.stderr)
         super().closeEvent(event)
-
-class MultipleChoiceDialog(QDialog):
-    def __init__(self, title, question, options, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle(title)
-        self.question = question
-        self.options = options
-        self.selected_option = None
-        self._create_option_selector()
-
-    def _create_option_selector(self):
-        layout = QVBoxLayout()
-        question_label = QLabel(self.question)
-        self.option_group = []
-
-        layout.addWidget(question_label)
-
-        for option in self.options:
-            radio_button = QRadioButton(option)
-            radio_button.toggled.connect(self._update_selected_option)
-            layout.addWidget(radio_button)
-            self.option_group.append(radio_button)
-
-        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        button_box.accepted.connect(self.accept)
-        button_box.rejected.connect(self.reject)
-        layout.addWidget(button_box)
-        self.setLayout(layout)
-
-    def _update_selected_option(self):
-        self.selected_option = None
-
-        for radio_button in self.option_group:
-            if radio_button.isChecked():
-                self.selected_option = radio_button.text()
-                break
-
-    def get_selected_option(self):
-        return self.selected_option

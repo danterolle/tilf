@@ -310,3 +310,16 @@ class PixelCanvas(QWidget):
             background_img.save(filename, file_format)
         else:
             img_to_save.save(filename, file_format)
+
+    def shift_image(self, shift_type):
+        self._push_undo()
+        x = 1 if shift_type == "Right" else -1 if shift_type == "Left" else 0
+        y = 1 if shift_type == "Bottom" else -1 if shift_type == "Top" else 0
+        tmp_image = QImage(self.rows, self.columns, QImage.Format.Format_ARGB32)
+        tmp_image.fill(self.base_color)
+        painter = QPainter(tmp_image)
+        painter.drawImage(x, y, self.image)
+        painter.end()
+        self.image = tmp_image
+        self.update()
+        self.image_changed.emit()

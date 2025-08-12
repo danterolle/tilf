@@ -226,9 +226,8 @@ class Tilf(QMainWindow):
             {
                 "custom_icon": resource_path("assets/icons/shift.png"),
                 "text": "Shift",
-                "shortcut": "S",
                 "handler": self._shift_canvas,
-                "tooltip": "Shift canvas up, down, left, or right."
+                "tooltip": "Shift canvas up, down, left, or right by 1px."
             },
             {
                 "sep": True
@@ -357,9 +356,7 @@ class Tilf(QMainWindow):
         shift_selection_dialog = MultipleChoiceDialog("Shift Canvas", "Shift canvas 1px to the:", shift_options, self)
         if shift_selection_dialog.exec():
             selected_option = shift_selection_dialog.get_selected_option()
-            if not selected_option:
-                pass
-            else:
+            if selected_option:
                 self.canvas.shift_image(selected_option.lower())
 
     def _toggle_grid(self, checked: bool) -> None:

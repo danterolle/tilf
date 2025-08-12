@@ -1,5 +1,5 @@
 import os
-from typing import Tuple
+from typing import Tuple, List
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap, QIcon
@@ -95,7 +95,7 @@ class AboutDialog(QDialog):
         layout.addLayout(button_layout)
 
 class MultipleChoiceDialog(QDialog):
-    def __init__(self, title, question, options, parent=None):
+    def __init__(self, title: str, question: str, options: List[str], parent: QWidget = None):
         super().__init__(parent)
         self.setWindowTitle(title)
         self.question = question

@@ -311,10 +311,10 @@ class PixelCanvas(QWidget):
         else:
             img_to_save.save(filename, file_format)
 
-    def shift_image(self, shift_type):
+    def shift_image(self, shift_type: str):
         self._push_undo()
-        x = 1 if shift_type == "Right" else -1 if shift_type == "Left" else 0
-        y = 1 if shift_type == "Bottom" else -1 if shift_type == "Top" else 0
+        x = 1 if shift_type == "right" else -1 if shift_type == "left" else 0
+        y = 1 if shift_type == "bottom" else -1 if shift_type == "top" else 0
         tmp_image = QImage(self.rows, self.columns, QImage.Format.Format_ARGB32)
         tmp_image.fill(self.base_color)
         painter = QPainter(tmp_image)

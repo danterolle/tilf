@@ -17,7 +17,7 @@ It runs on Windows, MacOS and GNU/Linux.
 
 Download the latest release from the [releases page](https://github.com/danterolle/tilf/releases).
 
-**Windows 11** -> [Download](https://github.com/danterolle/tilf/releases/download/v0.1/tilf_0.1-Windows)
+**Windows 11** -> [Download](https://github.com/danterolle/tilf/releases/download/v0.1/tilf_0.1-Windows.exe)
 ![Tilf on Windows](./screenshots/windows.png "Windows")
 **MacOS 15.6** -> [Download](https://github.com/danterolle/tilf/releases/download/v0.1/tilf_0.1-MacOS.zip)
 ![Tilf on MacOS](./screenshots/macos.png "MacOS")

@@ -362,7 +362,6 @@ class Tilf(QMainWindow):
             else:
                 self.canvas.shift_image(selected_option)
 
-
     def _toggle_grid(self, checked: bool) -> None:
         self.canvas.is_grid_visible = checked
         self.canvas.update()

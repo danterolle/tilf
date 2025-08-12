@@ -72,10 +72,12 @@ Publish it as an Open Source project might be interesting for others as well.
   - Real-time preview in a side dock (you can move it wherever you want)
 - Import/Export:
   - Open PNG, JPEG/JPG, BMP
-  - Export to PNG (with or without transparency), JPEG/JPG, BMP
-- Handy details:
+  - Export to PNG (with or without transparency), JPEG/JPG, BMP 
+
+### Handy details:
   - Hold Shift while drawing rectangles/ellipses to constrain to squares/circles
   - Grid is shown when zoom (cell size) is at least 4
+  - Clicking a pixel with the foreground color switches to drawing with the background color. Otherwise, the foreground color is used. Holding down Alt or Option forces the use of the background color.
 
 ## Requirements
 

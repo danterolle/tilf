@@ -32,6 +32,7 @@ class PixelCanvas(QWidget):
         self._shape_start_pos: Optional[QPoint] = None
         self._shape_end_pos: Optional[QPoint] = None
         self._preview_image: Optional[QImage] = None
+        self._pencil_draw_color: Optional[QColor] = None
         self.reset_canvas(self.columns, self.columns, clear_history=True)
         self._update_cursor()
 
@@ -176,18 +177,34 @@ class PixelCanvas(QWidget):
         col, row = pos.x() // self.cell_size, pos.y() // self.cell_size
         if not (0 <= col < self.columns and 0 <= row < self.rows): return
         color_at_pos = QColor(self.image.pixel(col, row))
+
         if event.button() == Qt.MouseButton.RightButton:
             self.color_picked.emit(color_at_pos)
             self.tool_change_requested.emit("pencil")
             return
-        if self.current_tool == "eyedropper": self.color_picked.emit(color_at_pos); return
+
+        if self.current_tool == "eyedropper":
+            self.color_picked.emit(color_at_pos)
+            return
+
         self._push_undo()
         self._is_drawing = True
+
         if self.current_tool in ["rect", "ellipse"]:
             self._shape_start_pos = QPoint(col, row)
             self._preview_image = QImage(self.image.size(), QImage.Format.Format_ARGB32)
             self._preview_image.fill(QColor(0, 0, 0, 0))
         elif self.current_tool == "pencil":
+
+            force_bg = bool(event.modifiers() & Qt.KeyboardModifier.AltModifier)
+            if force_bg:
+                self._pencil_draw_color = self.base_color
+            else:
+                # If the initial pixel is already the foreground color,
+                # the entire brushstroke will use the background color.
+                #
+                # Otherwise, it will use the foreground color.
+                self._pencil_draw_color = self.base_color if color_at_pos == self.current_color else self.current_color
             self._draw_at_cell(col, row, self.current_color)
         elif self.current_tool == "eraser":
             self._draw_at_cell(col, row, self.base_color)
@@ -198,14 +215,18 @@ class PixelCanvas(QWidget):
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         pos = event.position().toPoint()
         col, row = pos.x() // self.cell_size, pos.y() // self.cell_size
+
         if 0 <= col < self.columns and 0 <= row < self.rows:
             self.pixel_hovered.emit(col, row, QColor(self.image.pixel(col, row)))
+
             if self._is_drawing:
                 if self.current_tool in ["rect", "ellipse"]:
                     self._shape_end_pos = QPoint(col, row)
                     self._draw_shape_preview(event.modifiers() == Qt.KeyboardModifier.ShiftModifier)
                 elif self.current_tool == "pencil":
-                    self._draw_at_cell(col, row, self.current_color)
+                    # Use the "locked" color selected at mousePressEvent (Alt key, or Option on MacOS).
+                    color_to_use = self._pencil_draw_color or self.current_color
+                    self._draw_at_cell(col, row, color_to_use)
                 elif self.current_tool == "eraser":
                     self._draw_at_cell(col, row, self.base_color)
                 self.image_changed.emit()
@@ -218,6 +239,7 @@ class PixelCanvas(QWidget):
             self._shape_end_pos = None
             self.update()
         self._is_drawing = False
+        self._pencil_draw_color = None
 
     def wheelEvent(self, event) -> None:
         delta = event.angleDelta().y() // 120

@@ -6,7 +6,7 @@ def resource_path(relative_path: str) -> str:
     try:
         base_path = sys._MEIPASS  # type: ignore[attr-defined]
     except AttributeError:
-        base_path = os.path.abspath(".")
+        base_path = os.path.abspath(__file__)
     return os.path.join(base_path, relative_path)
 
 APP_NAME = "Tilf - Pixel Art Editor"

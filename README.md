@@ -8,7 +8,7 @@ It’s designed for creating sprites, icons, and small 2D assets with essential 
 There are several Pixel Art Editors that do the same things and even much more (animations, etc...), 
 but many require an account registration or the insertion of an e-mail or have a certain business model.
 
-I'm _not_ interested in all that, my goal is to be able to create sprites freely, with (almost) zero dependencies, 
+I'm _not_ interested in all that; my goal is to be able to create sprites freely, with (almost) zero dependencies, 
 zero setup time, zero installations:
 
 Tilf starts and I begin to draw what I want.
@@ -36,6 +36,7 @@ Publish it as an Open Source project might be interesting for others as well.
 
 ## Table of Contents
 
+- [Goals](#goals)
 - [Features](#features)
 - [Requirements](#requirements)
 - [Build on MacOS and GNU/Linux](#build-on-macos-and-gnulinux)
@@ -50,6 +51,16 @@ Publish it as an Open Source project might be interesting for others as well.
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
+
+## Goals
+
+- Single executable (cross-platform)
+- No accounts, no emails or registrations required
+- Completely free/open source with all features unlocked
+- Focused on small sprites and assets
+- Works offline without internet connection. No online platforms.
+- Almost zero dependencies: Python standard library + PySide6
+- Zero installation or setup time needed
 
 ## Features
 
@@ -75,6 +86,7 @@ Publish it as an Open Source project might be interesting for others as well.
   - Export to PNG (with or without transparency), JPEG/JPG, BMP 
 
 ### Handy details:
+
   - Hold Shift while drawing rectangles/ellipses to constrain to squares/circles
   - Grid is shown when zoom (cell size) is at least 4
   - Clicking a pixel with the foreground color switches to drawing with the background color. Otherwise, the foreground color is used. Holding down Alt or Option forces the use of the background color.

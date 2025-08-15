@@ -1,9 +1,11 @@
 import sys
 import os
-from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
-from editor import Tilf
-from helper import resource_path
+from PySide6.QtGui import QIcon
+
+from state import AppState
+from ui.editor import TilfEditor
+from config import resource_path
 
 def main() -> None:
     app = QApplication(sys.argv)
@@ -13,15 +15,20 @@ def main() -> None:
     app_icon_path = resource_path("assets/icon.icns")
     if os.path.exists(app_icon_path):
         app.setWindowIcon(QIcon(app_icon_path))
+    else:
+        print(f"Tilf icon not found at: {app_icon_path}")
 
     stylesheet_path = resource_path("style.qss")
     try:
         with open(stylesheet_path, "r") as f:
             app.setStyleSheet(f.read())
+        print(f"Stylesheet loaded from: {stylesheet_path}")
     except FileNotFoundError:
-        print(f"Stylesheet not found at: {stylesheet_path}")
+        print(f"Stylesheet not found at: {stylesheet_path}. Running with default style.")
 
-    window = Tilf()
+    app_state = AppState()
+
+    window = TilfEditor(app_state)
     window.show()
 
     sys.exit(app.exec())

@@ -1,7 +1,10 @@
 from __future__ import annotations
 from typing import Dict, List, TYPE_CHECKING
 from PySide6.QtCore import Qt, QRect, Signal, QPoint
-from PySide6.QtGui import QPainter, QColor, QPen, QImage, QPaintEvent, QMouseEvent, QWheelEvent
+from PySide6.QtGui import (
+    QPainter, QColor, QPen, QImage, QPaintEvent, QMouseEvent,
+    QWheelEvent, QPixmap, QBitmap
+)
 from PySide6.QtWidgets import QWidget
 from state import AppState
 import config
@@ -45,9 +48,30 @@ class Canvas(QWidget):
         self._tools: Dict[str, BaseTool] = self._create_tools()
         self._current_tool: BaseTool = self._tools["pencil"]
 
+        self._checkerboard_color_1: QColor = config.CHECKERBOARD_COLOR_1
+        self._checkerboard_color_2: QColor = config.CHECKERBOARD_COLOR_2
+        self._checkerboard_pixmap: QPixmap = self._create_checkerboard_pixmap(16)
+
         self.setMouseTracking(True)
         self._connect_state()
         self.reset_canvas(config.DEFAULT_WIDTH, config.DEFAULT_HEIGHT, clear_history=True)
+
+    # A small pixmap is cached once and tiled via `drawTiledPixmap()`,
+    # avoiding redrawing hundreds of rectangles on _every_ paint event.
+    #
+    # Check `paintEvent()` for more details.
+    def _create_checkerboard_pixmap(self, size: int) -> QPixmap:
+        pixmap = QPixmap(size * 2, size * 2)
+        pixmap.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(pixmap)
+        color1 = self._checkerboard_color_1
+        color2 = self._checkerboard_color_2
+        painter.fillRect(0, 0, size, size, color1)
+        painter.fillRect(size, size, size, size, color1)
+        painter.fillRect(size, 0, size, size, color2)
+        painter.fillRect(0, size, size, size, color2)
+        painter.end()
+        return pixmap
 
     # https://peps.python.org/pep-0484/#forward-references
     #
@@ -171,29 +195,19 @@ class Canvas(QWidget):
         return None
 
     def _on_secondary_color_change(self, new_bg_color: QColor) -> None:
-        if not new_bg_color.isValid() or new_bg_color == self._current_bg_color:
+        if (not new_bg_color.isValid()
+                or new_bg_color == self._current_bg_color):
             return
-
         self._push_undo()
 
-        old_color_rgba = self._current_bg_color.rgba()
-        new_color_rgba = new_bg_color.rgba()
-
-        # Iterate through the image and replace the old background color.
-        #
-        # Problem:
-        # This double loop iterates over _every single pixel_ of the image
-        # using Python method calls. For a 256x256 image, that’s
-        # 65,536 iterations. For a 1024x1024 image, over a million.
-        # And pixel-by-pixel operations in Python are notoriously **slow**.
-        #
-        # TODO:
-        # We could create a mask based on the color we want to replace,
-        # then use QPainter to **fill** only the areas defined by that mask.
-        for y in range(self.image.height()):
-            for x in range(self.image.width()):
-                if self.image.pixel(x, y) == old_color_rgba:
-                    self.image.setPixel(x, y, new_color_rgba)
+        # Create a mask of the old background color
+        mask = self.image.createMaskFromColor(self._current_bg_color.rgb(), Qt.MaskMode.MaskOutColor)
+        # Use QPainter to fill the masked area with the new color
+        painter = QPainter(self.image)
+        painter.setPen(new_bg_color)
+        painter.setBrush(new_bg_color)
+        painter.drawPixmap(self.image.rect(), QBitmap.fromImage(mask), mask.rect())
+        painter.end()
 
         self._current_bg_color = new_bg_color
         self.update()
@@ -233,7 +247,7 @@ class Canvas(QWidget):
 
     def paintEvent(self, event: QPaintEvent) -> None:
         painter = QPainter(self)
-        self._draw_checkerboard_background(painter)
+        painter.drawTiledPixmap(self.rect(), self._checkerboard_pixmap)
 
         target_rect = QRect(0, 0, self.columns * self.cell_size, self.rows * self.cell_size)
         painter.drawImage(target_rect, self.image)
@@ -251,19 +265,6 @@ class Canvas(QWidget):
 
         if self.is_grid_visible and self.cell_size >= 4:
             self._draw_grid(painter, target_rect)
-
-    def _draw_checkerboard_background(self, painter: QPainter) -> None:
-        checker_size = 8
-        # TODO:
-        # This double loop draws many small rectangles
-        # to cover the entire area of the widget.
-        # It is rerun from scratch _every single time the widget repaints_.
-        for y in range(0, self.height(), checker_size):
-            for x in range(0, self.width(), checker_size):
-                color = config.CHECKERBOARD_COLOR_1 \
-                    if (x // checker_size + y // checker_size) % 2 == 0 \
-                    else config.CHECKERBOARD_COLOR_2
-                painter.fillRect(x, y, checker_size, checker_size, color)
 
     def _draw_grid(self, painter: QPainter, target_rect: QRect) -> None:
         painter.setPen(QPen(self.grid_color))

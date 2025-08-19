@@ -9,17 +9,17 @@ from PySide6.QtWidgets import (
 class NewCanvas(QDialog):
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
-        self.setWindowTitle("New Image")
+        self.setWindowTitle("New Canvas")
         self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowCloseButtonHint)
         layout = QFormLayout(self)
 
         self.width_spinbox = QSpinBox()
-        self.width_spinbox.setRange(1, 512)
+        self.width_spinbox.setRange(1, 1024)
         self.width_spinbox.setValue(16)
         layout.addRow("Width (px):", self.width_spinbox)
 
         self.height_spinbox = QSpinBox()
-        self.height_spinbox.setRange(1, 512)
+        self.height_spinbox.setRange(1, 1024)
         self.height_spinbox.setValue(16)
         layout.addRow("Height (px):", self.height_spinbox)
 

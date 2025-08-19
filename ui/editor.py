@@ -41,6 +41,8 @@ class TilfEditor(QMainWindow):
         scroll_area.setWidgetResizable(True)
         scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
         scroll_area.setWidget(self.canvas)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setCentralWidget(scroll_area)
 
     def _setup_status_bar(self) -> None:

@@ -1,9 +1,13 @@
 # Tilf — Pixel Art Editor
 
+![GitHub last commit](https://img.shields.io/github/last-commit/danterolle/tilf)
+![GitHub Release](https://img.shields.io/github/v/release/danterolle/tilf)
+![GitHub License](https://img.shields.io/github/license/danterolle/tilf)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/danterolle/tilf/total)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/danterolle/tilf)
+
 Tilf (Tiny Elf) is a simple yet powerful pixel art editor built with PySide6.
 It’s designed for creating sprites, icons, and small 2D assets with essential drawing tools, live preview, undo/redo, export options and much more. Check [features](#features).
-
-![Tilf](./assets/icon.ico "Tilf")
 
 There are several Pixel Art Editors that do the same things and even much more (animations, etc...), 
 but many require an account registration or the insertion of an e-mail or have a certain business model.

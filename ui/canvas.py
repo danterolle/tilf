@@ -234,8 +234,7 @@ class Canvas(QWidget):
     def _update_size(self) -> None:
         width = self.columns * self.cell_size + 1
         height = self.rows * self.cell_size + 1
-        self.setMinimumSize(width, height)
-        self.resize(width, height)
+        self.setFixedSize(width, height)
         self.update()
 
     def set_cell_size(self, size: int) -> None:

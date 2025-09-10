@@ -82,6 +82,7 @@ class Shape(BaseTool):
         self._preview_image.fill(Qt.GlobalColor.transparent)
         painter = QPainter(self._preview_image)
         painter.setPen(QPen(self.app_state.primary_color))
+
         rect = self._get_shape_rect(force_square)
         self._draw_current_shape(painter, rect)
         painter.end()
@@ -90,6 +91,7 @@ class Shape(BaseTool):
     def _draw_shape_to_canvas(self, force_square: bool):
         painter = QPainter(self.canvas.image)
         painter.setPen(QPen(self.app_state.primary_color))
+
         rect = self._get_shape_rect(force_square)
         self._draw_current_shape(painter, rect)
         painter.end()

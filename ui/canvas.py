@@ -287,7 +287,6 @@ class Canvas(QWidget):
         self._is_drawing = True
         self._push_undo()
         self._current_tool.mousePressEvent(event, cell)
-        self.app_state.notify_image_changed()
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         pos = event.position().toPoint()
@@ -305,6 +304,7 @@ class Canvas(QWidget):
         cell = QPoint(pos.x() // self.cell_size, pos.y() // self.cell_size)
         self._current_tool.mouseReleaseEvent(event, cell)
         self._is_drawing = False
+        self.app_state.notify_image_changed()
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         delta = event.angleDelta().y() // 120

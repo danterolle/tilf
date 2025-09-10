@@ -231,7 +231,7 @@ folder next to the startup script, with a timestamped filename.
 
 ## Tips and Known Limits
 
-- [Undo/Redo history is capped at 50 states to limit memory usage](https://github.com/danterolle/tilf/blob/main/pixel_canvas.py#L31).
+- [Undo/Redo history is capped at 50 states to limit memory usage](https://github.com/danterolle/tilf/blob/c037fe25561913eedfb0a6724f2e188fa99bb30c/utils/config.py#L9).
 - Large flood fills may take longer on big images.
 - The grid appears when zoom (cell size) is at least 4.
 - Very large images may impact performance; Remember: *Tilf targets compact pixel art and sprites*.
@@ -240,7 +240,11 @@ folder next to the startup script, with a timestamped filename.
 
 ### ModuleNotFoundError: No module named 'PySide6'
 
-Ensure your virtualenv is active and run: pip install pyside6
+Ensure your virtualenv is active and run: 
+
+```
+pip install pyside6
+```
 
 ## Contributing
 

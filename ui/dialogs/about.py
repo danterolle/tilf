@@ -5,7 +5,7 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QDialog, QHBoxLayout, QVBoxLayout, QLabel, QWidget
 )
-from config import resource_path
+from utils.resource_path import get_resource_path
 
 class About(QDialog):
     def __init__(self, parent: QWidget = None):
@@ -17,7 +17,7 @@ class About(QDialog):
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.setSpacing(10)
 
-        icon_path = resource_path("assets/logo.png")
+        icon_path = get_resource_path("assets/logo.png")
         icon_label = QLabel()
 
         if os.path.exists(icon_path):

@@ -7,7 +7,7 @@ from PySide6.QtGui import QImage, QPainter, QColor
 
 from ui.canvas import Canvas
 from state import AppState
-import config
+from utils import config
 from ui.dialogs.new_canvas import NewCanvas
 
 class FileManager:

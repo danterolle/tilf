@@ -7,7 +7,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import QWidget
 from state import AppState
-import config
+from utils import config
 
 if TYPE_CHECKING:
     from tools.base_tool import BaseTool

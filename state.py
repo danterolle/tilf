@@ -1,7 +1,7 @@
 from typing import Optional
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QColor
-import config
+from utils import config
 
 
 class AppState(QObject):

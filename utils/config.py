@@ -1,20 +1,13 @@
-import os, sys
 from typing import List, Dict, Any
 from PySide6.QtGui import QColor
 
-def resource_path(relative_path: str) -> str:
-    try:
-        base_path = sys._MEIPASS  # type: ignore[attr-defined]
-    except AttributeError:
-        base_path = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(base_path, relative_path)
 
 APP_NAME = "Tilf - Pixel Art Editor"
 DEFAULT_WIDTH = 16
 DEFAULT_HEIGHT = 16
 DEFAULT_ZOOM = 35
 HISTORY_LIMIT = 50
-AUTOSAVE_DIR = "tilf_autosaves"
+AUTOSAVE_DIR = "../tilf_autosaves"
 
 DEFAULT_PRIMARY_COLOR = QColor("black")
 DEFAULT_SECONDARY_COLOR = QColor("white")

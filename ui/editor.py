@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout, QDockWidget, QVBoxLayout, QPushButton
 )
 from state import AppState
-import config
+from utils import config
 from file_manager import FileManager
 from ui.canvas import Canvas
 from ui.toolbar import Toolbar

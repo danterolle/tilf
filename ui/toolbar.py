@@ -3,7 +3,7 @@ from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QAction, QIcon, QKeySequence, QActionGroup
 from PySide6.QtWidgets import QToolBar, QMainWindow
 from state import AppState
-import config
+from utils import config, resource_path
 
 
 class Toolbar:
@@ -41,8 +41,11 @@ class Toolbar:
         for tool_name, data in config.TOOLS.items():
             action_data = data.copy()
             action_data["checkable"] = True
-            action_data["handler_name"] = lambda checked, tool=tool_name: self.app_state.set_tool(
-                tool) if checked else None
+            action_data["handler_name"] = \
+                lambda \
+                        checked, tool=tool_name: \
+                    (self.app_state.set_tool(tool)) \
+                    if checked else None
 
             action = self._create_action(action_data, tooltip_prefix=data.get("text", ""))
             tools_group.addAction(action)
@@ -52,7 +55,7 @@ class Toolbar:
     def _create_action(self, data: Dict[str, Any], tooltip_prefix: str = "") -> QAction:
         text = data.get("text", "")
         icon_path = data.get("icon", "")
-        icon = QIcon(config.resource_path(icon_path)) if icon_path else QIcon()
+        icon = QIcon(resource_path.get_resource_path(icon_path)) if icon_path else QIcon()
 
         action = QAction(icon, text, self.main_window)
 

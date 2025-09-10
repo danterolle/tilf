@@ -5,20 +5,20 @@ from PySide6.QtGui import QIcon
 
 from state import AppState
 from ui.editor import TilfEditor
-from config import resource_path
+from utils.resource_path import get_resource_path
 
 def main() -> None:
     app = QApplication(sys.argv)
     app.setApplicationName("Tilf - Pixel Art Editor")
     app.setQuitOnLastWindowClosed(True)
 
-    app_icon_path = resource_path("assets/icon.icns")
+    app_icon_path = get_resource_path("icon.icns")
     if os.path.exists(app_icon_path):
         app.setWindowIcon(QIcon(app_icon_path))
     else:
         print(f"Tilf icon not found at: {app_icon_path}")
 
-    stylesheet_path = resource_path("style.qss")
+    stylesheet_path = get_resource_path("style.qss")
     try:
         with open(stylesheet_path, "r") as f:
             app.setStyleSheet(f.read())

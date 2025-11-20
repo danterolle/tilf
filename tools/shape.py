@@ -44,7 +44,7 @@ class Shape(BaseTool):
             painter.drawImage(target_rect, self._preview_image)
 
     def _get_shape_rect(self, force_square: bool) -> QRect:
-        if not self._shape_start_pos or not self._shape_end_pos:
+        if self._shape_start_pos is None or self._shape_end_pos is None:
             return QRect()
 
         x1, y1 = self._shape_start_pos.x(), self._shape_start_pos.y()

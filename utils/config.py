@@ -15,29 +15,37 @@ DEFAULT_GRID_COLOR = QColor(80, 80, 80, 160)
 CHECKERBOARD_COLOR_1 = QColor(220, 220, 220, 190)
 CHECKERBOARD_COLOR_2 = QColor(180, 180, 180, 150)
 
+class ToolType:
+    PENCIL = "pencil"
+    ERASER = "eraser"
+    FILL = "fill"
+    EYEDROPPER = "eyedropper"
+    RECT = "rect"
+    ELLIPSE = "ellipse"
+
 # The key (e.g., "pencil") is like the tool ID
 TOOLS: Dict[str, Dict[str, Any]] = {
-    "pencil": {
+    ToolType.PENCIL: {
         "text": "Pencil", "icon": "assets/icons/pencil.png", "shortcut": "B",
         "tooltip": "Draw with the primary color. Hold Alt to use secondary color."
     },
-    "eraser": {
+    ToolType.ERASER: {
         "text": "Eraser", "icon": "assets/icons/eraser.png", "shortcut": "E",
         "tooltip": "Erase pixels to the secondary (background) color."
     },
-    "fill": {
+    ToolType.FILL: {
         "text": "Bucket", "icon": "assets/icons/bucket.png", "shortcut": "G",
         "tooltip": "Fill an area with the primary color."
     },
-    "eyedropper": {
+    ToolType.EYEDROPPER: {
         "text": "Picker", "icon": "assets/icons/picker.png", "shortcut": "I",
         "tooltip": "Pick a color from the canvas. Right-click is a shortcut."
     },
-    "rect": {
+    ToolType.RECT: {
         "text": "Square", "icon": "assets/icons/square.png", "shortcut": "R",
         "tooltip": "Draw a rectangle. Hold Shift for a perfect square."
     },
-    "ellipse": {
+    ToolType.ELLIPSE: {
         "text": "Circle", "icon": "assets/icons/circle.png", "shortcut": "C",
         "tooltip": "Draw an ellipse. Hold Shift for a perfect circle."
     },

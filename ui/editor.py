@@ -34,7 +34,7 @@ class TilfEditor(QMainWindow):
         self._connect_signals()
 
         self.app_state.set_file_path(None)
-        self.app_state.set_tool("pencil")
+        self.app_state.set_tool(config.ToolType.PENCIL)
 
     def _setup_central_widget(self) -> None:
         scroll_area = QScrollArea()

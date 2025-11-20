@@ -108,12 +108,12 @@ class Canvas(QWidget):
         from tools.ellipse import Ellipse
 
         return {
-            "pencil": Pencil(self, self.app_state),
-            "eraser": Eraser(self, self.app_state),
-            "fill": Fill(self, self.app_state),
-            "eyedropper": Eyedropper(self, self.app_state),
-            "rect": Rect(self, self.app_state),
-            "ellipse": Ellipse(self, self.app_state),
+            config.ToolType.PENCIL: Pencil(self, self.app_state),
+            config.ToolType.ERASER: Eraser(self, self.app_state),
+            config.ToolType.FILL: Fill(self, self.app_state),
+            config.ToolType.EYEDROPPER: Eyedropper(self, self.app_state),
+            config.ToolType.RECT: Rect(self, self.app_state),
+            config.ToolType.ELLIPSE: Ellipse(self, self.app_state),
         }
 
     def _connect_state(self) -> None:
@@ -281,7 +281,7 @@ class Canvas(QWidget):
         if event.button() == Qt.MouseButton.RightButton:
             color = QColor(self.image.pixel(cell))
             self.app_state.set_primary_color(color)
-            self.app_state.set_tool("pencil")
+            self.app_state.set_tool(config.ToolType.PENCIL)
             return
 
         self._is_drawing = True

@@ -48,7 +48,15 @@ class FileManager:
         path = self.app_state.current_file_path
         if not path:
             return self.save_file_as()
-        return self.save_file_as()
+
+        file_ext = os.path.splitext(path)[1].upper().replace('.', '')
+        file_format = "JPEG" if file_ext in ("JPG", "JPEG") else "BMP" if file_ext == "BMP" else "PNG"
+
+        is_transparent = (file_format == "PNG")
+
+        self.export_image(path, file_format, is_transparent)
+        self.app_state.set_dirty(False)
+        return True
 
     def save_file_as(self) -> bool:
         path, file_format, is_transparent = self._prompt_save_path_and_options()
@@ -57,6 +65,7 @@ class FileManager:
 
         self.export_image(path, file_format, is_transparent)
         self.app_state.set_file_path(path)
+        self.app_state.set_dirty(False)
         return True
 
     def autosave_on_exit(self):

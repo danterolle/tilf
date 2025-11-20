@@ -209,3 +209,4 @@ __marimo__/
 
 # Tilf autosaves
 tilf_autosaves/
+.DS_Store

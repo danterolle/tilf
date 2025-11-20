@@ -18,7 +18,7 @@ class AppState(QObject):
         self._current_file_path: Optional[str] = None
         self._primary_color: QColor = config.DEFAULT_PRIMARY_COLOR
         self._secondary_color: QColor = config.DEFAULT_SECONDARY_COLOR
-        self._current_tool: str = "pencil"
+        self._current_tool: str = config.ToolType.PENCIL
 
     @property
     def is_dirty(self) -> bool:

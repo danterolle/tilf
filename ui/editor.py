@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout, QDockWidget, QVBoxLayout, QPushButton
 )
 from state import AppState
-from utils import config
+from utils import config, updater
 from file_manager import FileManager
 from ui.canvas import Canvas
 from ui.toolbar import Toolbar
@@ -18,6 +18,7 @@ from ui.dialogs.multiple_choice import MultipleChoice
 class TilfEditor(QMainWindow):
     def __init__(self, app_state: AppState):
         super().__init__()
+        self.update_thread = None
         self.app_state = app_state
 
         self.setWindowTitle(config.APP_NAME)
@@ -85,6 +86,7 @@ class TilfEditor(QMainWindow):
             "toggle_grid": self.toggle_grid,
             "choose_grid_color": self.choose_grid_color,
             "shift_canvas": self.shift_canvas,
+            "check_updates": self.check_updates,
             "about": self.about,
         }
         builder = Toolbar(self, self.app_state, handlers)
@@ -162,6 +164,36 @@ class TilfEditor(QMainWindow):
 
     def about(self) -> int:
         return About(self).exec()
+
+    def check_updates(self) -> None:
+        self.status_bar.showMessage("Checking for updates...")
+
+        self.update_thread = updater.UpdateChecker()
+        self.update_thread.result_ready.connect(self._on_update_check_finished)
+        self.update_thread.start()
+
+    def _on_update_check_finished(self, has_update: bool, version: str, url: str, error: str) -> None:
+        self.status_bar.clearMessage()
+
+        if error:
+            QMessageBox.warning(self, "Update Check Failed", f"Could not check for updates.\n\nError: {error}")
+            return
+
+        if has_update:
+            reply = QMessageBox.question(
+                self,
+                "Update Available",
+                f"A new version ({version}) is available!\n\nDo you want to open the download page?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            )
+            if reply == QMessageBox.StandardButton.Yes:
+                updater.open_download_page(url)
+        else:
+            QMessageBox.information(
+                self,
+                "Updated",
+                f"You are using the latest version ({config.APP_VERSION})."
+            )
 
     def _update_window_title(self) -> None:
         filename = os.path.basename(

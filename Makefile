@@ -28,6 +28,7 @@ $(VENV_DIR)/touchfile: requirements.txt
 requirements.txt:
 	@echo "Generating requirements.txt..."
 	@echo "pyside6" > requirements.txt
+	@echo "certifi" >> requirements.txt
 	@echo "pyinstaller" >> requirements.txt
 	@echo "requirements.txt created successfully."
 

@@ -5,6 +5,8 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QDialog, QHBoxLayout, QVBoxLayout, QLabel, QWidget
 )
+
+from utils import config
 from utils.resource_path import get_resource_path
 
 class About(QDialog):
@@ -38,7 +40,7 @@ class About(QDialog):
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         info_label = QLabel(
-            "<br>Version 0.2 - under GPL v3 License<br>"
+            f"<br>Version {config.APP_VERSION} - under GPL v3 License<br>"
             "<br>Tilf (Tiny Elf) is a simple pixel art editor for creating, drawing and modifying images with "
             "pixel-level precision.<br>"
             "<br>It features essential tools like a pencil, fill bucket, and shapes, along with a grid system to "

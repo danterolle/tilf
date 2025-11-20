@@ -3,6 +3,9 @@ from PySide6.QtGui import QColor
 
 
 APP_NAME = "Tilf - Pixel Art Editor"
+APP_VERSION = "0.2"
+GITHUB_REPO = "danterolle/tilf"
+
 DEFAULT_WIDTH = 16
 DEFAULT_HEIGHT = 16
 DEFAULT_ZOOM = 35
@@ -73,5 +76,6 @@ TOOLBAR_ACTIONS: List[Dict[str, Any]] = [
     {"sep": True},
     {"text": "Shift", "icon": "assets/icons/shift.png", "handler_name": "shift_canvas", "tooltip": "Shift canvas up, down, left, or right by 1px."},
     {"sep": True},
+    {"text": "Update", "icon": "assets/icons/save.png", "handler_name": "check_updates", "tooltip": "Check for updates"},
     {"text": "About", "icon": "assets/logo.png", "handler_name": "about", "tooltip": "About Tilf"},
 ]

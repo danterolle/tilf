@@ -21,8 +21,11 @@ class FileManager:
             return
         dialog = NewCanvas(self.parent)
         if dialog.exec():
-            width, height = dialog.get_size()
-            self.canvas.reset_canvas(width, height, clear_history=True)
+            width, height, tile_cols, tile_rows, tile_size = dialog.get_size()
+            self.canvas.reset_canvas(
+                width, height, clear_history=True,
+                tile_cols=tile_cols, tile_rows=tile_rows, tile_size=tile_size,
+            )
             self.app_state.set_file_path(None)
 
     def open_file(self, path: Optional[str] = None):

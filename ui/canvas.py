@@ -31,6 +31,9 @@ class Canvas(QWidget):
         self.cell_size: int = config.DEFAULT_ZOOM
         self.grid_color: QColor = config.DEFAULT_GRID_COLOR
         self.is_grid_visible: bool = True
+        self.tile_cols: int = config.DEFAULT_TILE_COLS
+        self.tile_rows: int = config.DEFAULT_TILE_ROWS
+        self.tile_size: int = config.DEFAULT_TILE_SIZE
         self._current_bg_color: QColor = self.app_state.secondary_color
 
         self._undo_stack: List[QImage] = []
@@ -86,8 +89,17 @@ class Canvas(QWidget):
         else:
             print(config.MSG_TOOL_WARNING_FMT.format(tool_name=tool_name))
 
-    def reset_canvas(self, columns: int, rows: int, clear_history: bool = False) -> None:
+    def reset_canvas(
+            self, columns: int, rows: int, clear_history: bool = False,
+            tile_cols: int = 0, tile_rows: int = 0, tile_size: int = 0,
+    ) -> None:
         self.columns, self.rows = columns, rows
+        if tile_cols:
+            self.tile_cols = tile_cols
+        if tile_rows:
+            self.tile_rows = tile_rows
+        if tile_size:
+            self.tile_size = tile_size
         self.image = QImage(self.columns, self.rows, QImage.Format.Format_ARGB32)
         self._current_bg_color = self.app_state.secondary_color
         self.image.fill(self.app_state.secondary_color)
@@ -220,10 +232,16 @@ class Canvas(QWidget):
             self._draw_grid(painter, target_rect)
 
     def _draw_grid(self, painter: QPainter, target_rect: QRect) -> None:
-        painter.setPen(QPen(self.grid_color))
         width, height, step = target_rect.width(), target_rect.height(), self.cell_size
+        painter.setPen(QPen(self.grid_color, 1))
         for x in range(0, width + 1, step): painter.drawLine(x, 0, x, height)
         for y in range(0, height + 1, step): painter.drawLine(0, y, width, y)
+
+        if self.tile_size > 1:
+            painter.setPen(QPen(self.grid_color, 2))
+            tile_step = step * self.tile_size
+            for x in range(0, width + 1, tile_step): painter.drawLine(x, 0, x, height)
+            for y in range(0, height + 1, tile_step): painter.drawLine(0, y, width, y)
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         pos = event.position().toPoint()

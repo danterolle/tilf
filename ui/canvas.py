@@ -188,11 +188,12 @@ class Canvas(QWidget):
         self.update()
         self.app_state.notify_image_changed()
 
-    def draw_pixel(self, col: int, row: int, color: QColor) -> None:
+    def draw_pixel(self, col: int, row: int, color: QColor) -> bool:
         if 0 <= col < self.columns and 0 <= row < self.rows and self.image.pixelColor(col, row) != color:
             self.image.setPixelColor(col, row, color)
-            return self.update(QRect(col * self.cell_size, row * self.cell_size, self.cell_size, self.cell_size))
-        return None
+            self.update(QRect(col * self.cell_size, row * self.cell_size, self.cell_size, self.cell_size))
+            return True
+        return False
 
     def _on_secondary_color_change(self, new_bg_color: QColor) -> None:
         if (not new_bg_color.isValid()
@@ -285,8 +286,12 @@ class Canvas(QWidget):
             return
 
         self._is_drawing = True
-        self._push_undo()
-        self._current_tool.mousePressEvent(event, cell)
+        snapshot = self.image.copy()
+        if self._current_tool.mousePressEvent(event, cell):
+            self._undo_stack.append(snapshot)
+            if len(self._undo_stack) > config.HISTORY_LIMIT:
+                self._undo_stack.pop(0)
+            self._redo_stack.clear()
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         pos = event.position().toPoint()

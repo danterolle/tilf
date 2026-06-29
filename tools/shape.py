@@ -14,10 +14,11 @@ class Shape(BaseTool):
         self._shape_end_pos: QPoint | None = None
         self._preview_image: QImage | None = None
 
-    def mousePressEvent(self, event: QMouseEvent, cell: QPoint):
+    def mousePressEvent(self, event: QMouseEvent, cell: QPoint) -> bool:
         self._shape_start_pos = cell
         self._preview_image = QImage(self.canvas.image.size(), QImage.Format.Format_ARGB32)
         self._preview_image.fill(Qt.GlobalColor.transparent)
+        return True
 
     def mouseMoveEvent(self, event: QMouseEvent, cell: QPoint):
         if not self._preview_image: return

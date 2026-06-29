@@ -12,7 +12,7 @@ class BaseTool(ABC):
         self.app_state = app_state
 
     @abstractmethod
-    def mousePressEvent(self, event: QMouseEvent, cell: QPoint) -> None:
+    def mousePressEvent(self, event: QMouseEvent, cell: QPoint) -> bool:
         pass
 
     @abstractmethod

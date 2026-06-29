@@ -5,19 +5,20 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QDialog, QHBoxLayout, QVBoxLayout, QLabel, QWidget
 )
+from utils import config
 from utils.resource_path import get_resource_path
 
 class About(QDialog):
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
-        self.setWindowTitle("About Tilf")
+        self.setWindowTitle(config.TITLE_ABOUT)
         self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowCloseButtonHint)
 
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.setSpacing(10)
 
-        icon_path = get_resource_path("assets/logo.png")
+        icon_path = get_resource_path(config.LOGO_RESOURCE)
         icon_label = QLabel()
 
         if os.path.exists(icon_path):

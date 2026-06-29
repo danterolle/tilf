@@ -36,7 +36,7 @@ class AppState(QObject):
     def set_file_path(self, path: Optional[str], mark_dirty: bool = False):
         self._current_file_path = path
         self.set_dirty(mark_dirty)
-        self.file_path_changed.emit(path or "Untitled")
+        self.file_path_changed.emit(path or config.UNTITLED_NAME)
 
     @property
     def primary_color(self) -> QColor:

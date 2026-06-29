@@ -31,15 +31,15 @@ class FileManager:
         if not path:
             path, _ = QFileDialog.getOpenFileName(
                 self.parent,
-                "Open Image",
+                config.TITLE_OPEN_IMAGE,
                 "",
-                "Images (*.png *.jpg *.jpeg *.bmp)"
+                config.OPEN_FILE_FILTER
             )
 
         if path:
             image = QImage(path)
             if image.isNull():
-                QMessageBox.warning(self.parent, "Error", "Failed to load the image.")
+                QMessageBox.warning(self.parent, config.TITLE_ERROR, config.MSG_FAILED_LOAD)
             else:
                 self.canvas.load_image(image)
                 self.app_state.set_file_path(path)
@@ -50,9 +50,13 @@ class FileManager:
             return self.save_file_as()
 
         file_ext = os.path.splitext(path)[1].upper().replace('.', '')
-        file_format = "JPEG" if file_ext in ("JPG", "JPEG") else "BMP" if file_ext == "BMP" else "PNG"
+        file_format = (
+            config.IMAGE_FORMAT_JPEG if file_ext in config.JPEG_EXTENSIONS
+            else config.IMAGE_FORMAT_BMP if file_ext == config.IMAGE_FORMAT_BMP
+            else config.IMAGE_FORMAT_PNG
+        )
 
-        is_transparent = (file_format == "PNG")
+        is_transparent = (file_format == config.IMAGE_FORMAT_PNG)
 
         self.export_image(path, file_format, is_transparent)
         self.app_state.set_dirty(False)
@@ -76,20 +80,20 @@ class FileManager:
             script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
             autosaves_dir = os.path.join(script_dir, config.AUTOSAVE_DIR)
             os.makedirs(autosaves_dir, exist_ok=True)
-            timestamp = time.strftime("%Y%m%d_%H%M%S")
-            basename = os.path.splitext(os.path.basename(self.app_state.current_file_path or "sprite"))[0]
+            timestamp = time.strftime(config.AUTOSAVE_TIMESTAMP_FORMAT)
+            basename = os.path.splitext(os.path.basename(self.app_state.current_file_path or ""))[0] or "sprite"
             autosave_path = os.path.join(autosaves_dir, f"{basename}_{timestamp}.png")
-            self.export_image(autosave_path, "PNG", is_transparent=True)
-            print(f"Autosaved recovery file to: {autosave_path}")
+            self.export_image(autosave_path, config.IMAGE_FORMAT_PNG, is_transparent=True)
+            print(config.MSG_AUTOSAVE_SUCCESS_FMT.format(path=autosave_path))
         except Exception as e:
-            print(f"Error during autosave: {e}", file=sys.stderr)
+            print(config.MSG_AUTOSAVE_ERROR_FMT.format(error=e), file=sys.stderr)
 
 
     def export_image(self, filename: str, file_format: Optional[str], is_transparent: bool) -> None:
         img_to_save = self.canvas.image.copy()
         if not is_transparent:
             background_img = QImage(img_to_save.size(), QImage.Format.Format_ARGB32)
-            background_img.fill(QColor("white"))
+            background_img.fill(QColor(config.COLOR_WHITE))
             painter = QPainter(background_img)
             painter.drawImage(0, 0, img_to_save)
             painter.end()
@@ -102,8 +106,8 @@ class FileManager:
             return True
         reply = QMessageBox.question(
             self.parent,
-            "Unsaved Changes",
-            "You have unsaved changes. Do you want to continue and discard them?",
+            config.TITLE_UNSAVED,
+            config.MSG_DISCARD_CHANGES,
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No
         )
@@ -111,25 +115,26 @@ class FileManager:
 
     def _prompt_save_path_and_options(self) -> Tuple[Optional[str], Optional[str], bool]:
         path, selected_filter = QFileDialog.getSaveFileName(
-            self.parent, "Save Image", self.app_state.current_file_path or "sprite.png",
-            "PNG (*.png);;JPEG (*.jpg *.jpeg);;BMP (*.bmp)"
+            self.parent, config.TITLE_SAVE_IMAGE, self.app_state.current_file_path or config.DEFAULT_FILENAME,
+            config.SAVE_FILE_FILTER
         )
         if not path:
             return None, None, False
 
         file_ext = os.path.splitext(path)[1].upper().replace('.', '')
-        if file_ext in ("JPG", "JPEG"):
-            file_format = "JPEG"
-        elif file_ext == "BMP":
-            file_format = "BMP"
-        else: file_format = "PNG"
+        if file_ext in config.JPEG_EXTENSIONS:
+            file_format = config.IMAGE_FORMAT_JPEG
+        elif file_ext == config.IMAGE_FORMAT_BMP:
+            file_format = config.IMAGE_FORMAT_BMP
+        else:
+            file_format = config.IMAGE_FORMAT_PNG
 
         is_transparent = False
-        if file_format == "PNG":
+        if file_format == config.IMAGE_FORMAT_PNG:
             reply = QMessageBox.question(
                 self.parent,
-                "Transparency",
-                "Save with a transparent background?",
+                config.TITLE_TRANSPARENCY,
+                config.MSG_TRANSPARENCY_PROMPT,
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
             )
             is_transparent = (reply == QMessageBox.StandardButton.Yes)

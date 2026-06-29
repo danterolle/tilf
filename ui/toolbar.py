@@ -14,7 +14,7 @@ class Toolbar:
         self.tool_actions: Dict[str, QAction] = {}
 
     def create_toolbar(self) -> QToolBar:
-        toolbar = QToolBar("Main Toolbar")
+        toolbar = QToolBar(config.TOOLBAR_TITLE)
         toolbar.setIconSize(QSize(24, 24))
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
         toolbar.setMovable(False)

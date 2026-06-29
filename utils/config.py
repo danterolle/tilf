@@ -15,6 +15,75 @@ DEFAULT_GRID_COLOR = QColor(80, 80, 80, 160)
 CHECKERBOARD_COLOR_1 = QColor(220, 220, 220, 190)
 CHECKERBOARD_COLOR_2 = QColor(180, 180, 180, 150)
 
+# --- File I/O ---
+OPEN_FILE_FILTER = "Images (*.png *.jpg *.jpeg *.bmp)"
+SAVE_FILE_FILTER = "PNG (*.png);;JPEG (*.jpg *.jpeg);;BMP (*.bmp)"
+SUPPORTED_EXTENSIONS = (".png", ".jpg", ".jpeg", ".bmp")
+JPEG_EXTENSIONS = ("JPG", "JPEG")
+IMAGE_FORMAT_PNG = "PNG"
+IMAGE_FORMAT_JPEG = "JPEG"
+IMAGE_FORMAT_BMP = "BMP"
+DEFAULT_FILENAME = "sprite.png"
+COLOR_WHITE = "white"
+COLOR_TRANSPARENT = "transparent"
+AUTOSAVE_TIMESTAMP_FORMAT = "%Y%m%d_%H%M%S"
+
+# --- UI ---
+TITLE_ERROR = "Error"
+TITLE_UNSAVED = "Unsaved Changes"
+TITLE_TRANSPARENCY = "Transparency"
+TITLE_CLEAR_CANVAS = "Clear Canvas"
+TITLE_SHIFT_CANVAS = "Shift Canvas"
+TITLE_NEW_CANVAS = "New Canvas"
+TITLE_ABOUT = "About Tilf"
+TITLE_OPEN_IMAGE = "Open Image"
+TITLE_SAVE_IMAGE = "Save Image"
+TITLE_PRIMARY_COLOR = "Choose Primary Color"
+TITLE_SECONDARY_COLOR = "Choose Secondary Color"
+TITLE_GRID_COLOR = "Choose Grid Color"
+
+MSG_FAILED_LOAD = "Failed to load the image."
+MSG_DISCARD_CHANGES = "You have unsaved changes. Do you want to continue and discard them?"
+MSG_SAVE_BEFORE_QUIT = "You have unsaved changes. Do you want to save before quitting?"
+MSG_TRANSPARENCY_PROMPT = "Save with a transparent background?"
+MSG_CLEAR_CONFIRM = "Are you sure you want to clear the canvas?"
+MSG_SHIFT_CANVAS = "Shift canvas 1px to the:"
+
+LABEL_WIDTH = "Width (px):"
+LABEL_HEIGHT = "Height (px):"
+BTN_OK = "OK"
+BTN_CANCEL = "Cancel"
+BTN_RESET_ZOOM = "Reset Zoom"
+LABEL_PREVIEW = "Preview"
+TOOLBAR_TITLE = "Main Toolbar"
+
+DIRTY_MARKER = "*"
+UNTITLED_NAME = "Untitled"
+WINDOW_TITLE_FMT = "{marker}{name} - " + APP_NAME
+RESET_ZOOM_TOOLTIP_FMT = "Reset zoom to {zoom}x"
+
+# --- Canvas shift directions ---
+SHIFT_OPTIONS = ["Left", "Right", "Up", "Down"]
+SHIFT_OFFSETS = {
+    "right": (1, 0),
+    "left": (-1, 0),
+    "down": (0, 1),
+    "up": (0, -1),
+}
+
+# --- Assets ---
+ICON_FILENAME = "icon.icns"
+STYLESHEET_FILENAME = "style.qss"
+LOGO_RESOURCE = "assets/logo.png"
+
+# --- Console messages ---
+MSG_ICON_NOT_FOUND_FMT = "Tilf icon not found at: {path}"
+MSG_STYLESHEET_LOADED_FMT = "Stylesheet loaded from: {path}"
+MSG_STYLESHEET_MISSING_FMT = "Stylesheet not found at: {path}. Running with default style."
+MSG_AUTOSAVE_SUCCESS_FMT = "Autosaved recovery file to: {path}"
+MSG_AUTOSAVE_ERROR_FMT = "Error during autosave: {error}"
+MSG_TOOL_WARNING_FMT = "Warning: Tool '{tool_name}' not found."
+
 class ToolType:
     PENCIL = "pencil"
     ERASER = "eraser"

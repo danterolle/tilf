@@ -38,7 +38,7 @@ class Canvas(QWidget):
 
         self._is_drawing: bool = False
         self._tools: Dict[str, BaseTool] = self._create_tools()
-        self._current_tool: BaseTool = self._tools["pencil"]
+        self._current_tool: BaseTool = self._tools[config.ToolType.PENCIL]
 
         self._checkerboard_color_1: QColor = config.CHECKERBOARD_COLOR_1
         self._checkerboard_color_2: QColor = config.CHECKERBOARD_COLOR_2
@@ -84,7 +84,7 @@ class Canvas(QWidget):
             self._current_tool = self._tools[tool_name]
             self.setCursor(self._current_tool.get_cursor())
         else:
-            print(f"Warning: Tool '{tool_name}' not found.")
+            print(config.MSG_TOOL_WARNING_FMT.format(tool_name=tool_name))
 
     def reset_canvas(self, columns: int, rows: int, clear_history: bool = False) -> None:
         self.columns, self.rows = columns, rows
@@ -104,7 +104,7 @@ class Canvas(QWidget):
         self.image = image.convertToFormat(QImage.Format.Format_ARGB32)
         self.columns, self.rows = self.image.width(), self.image.height()
         # Assume transparent images have a transparent background color
-        self.app_state.set_secondary_color(QColor("transparent"))
+        self.app_state.set_secondary_color(QColor(config.COLOR_TRANSPARENT))
         self._current_bg_color = self.app_state.secondary_color
         self._push_undo()
         self._update_size()
@@ -125,13 +125,7 @@ class Canvas(QWidget):
     def shift_image(self, direction: str) -> None:
         self._push_undo()
 
-        offsets = {
-            "right": (1, 0),
-            "left": (-1, 0),
-            "down": (0, 1),
-            "up": (0, -1)
-        }
-        dx, dy = offsets.get(direction, (0, 0))
+        dx, dy = config.SHIFT_OFFSETS.get(direction, (0, 0))
 
         if dx == 0 and dy == 0:
             return

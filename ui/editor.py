@@ -60,9 +60,9 @@ class TilfEditor(QMainWindow):
         self.zoom_slider.setValue(config.DEFAULT_ZOOM)
         self.zoom_slider.setFixedWidth(150)
 
-        reset_button = QPushButton("Reset Zoom")
+        reset_button = QPushButton(config.BTN_RESET_ZOOM)
         reset_button.setFixedWidth(100)
-        reset_button.setToolTip(f"Reset zoom to {config.DEFAULT_ZOOM}x")
+        reset_button.setToolTip(config.RESET_ZOOM_TOOLTIP_FMT.format(zoom=config.DEFAULT_ZOOM))
 
         zoom_layout.addWidget(self.zoom_slider)
         zoom_layout.addWidget(reset_button)
@@ -99,12 +99,12 @@ class TilfEditor(QMainWindow):
         container = QWidget()
         layout = QVBoxLayout(container)
         layout.setContentsMargins(8, 8, 8, 8)
-        label = QLabel("Preview")
+        label = QLabel(config.LABEL_PREVIEW)
         label.setStyleSheet("font-weight:bold; color:#ddd;")
         layout.addWidget(label)
         layout.addWidget(self.preview_label, 1)
 
-        dock = QDockWidget("Preview", self)
+        dock = QDockWidget(config.LABEL_PREVIEW, self)
         dock.setWidget(container)
         dock.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
@@ -123,25 +123,25 @@ class TilfEditor(QMainWindow):
         )
 
     def choose_primary_color(self) -> None:
-        color = QColorDialog.getColor(self.app_state.primary_color, self, "Choose Primary Color")
+        color = QColorDialog.getColor(self.app_state.primary_color, self, config.TITLE_PRIMARY_COLOR)
         if color.isValid(): self.app_state.set_primary_color(color)
 
     def choose_secondary_color(self) -> None:
         color = QColorDialog.getColor(
-            self.app_state.secondary_color, self, "Choose Secondary Color",
+            self.app_state.secondary_color, self, config.TITLE_SECONDARY_COLOR,
             QColorDialog.ColorDialogOption.ShowAlphaChannel
         )
         if color.isValid(): self.app_state.set_secondary_color(color)
 
     def choose_grid_color(self) -> None:
-        color = QColorDialog.getColor(self.canvas.grid_color, self, "Choose Grid Color")
+        color = QColorDialog.getColor(self.canvas.grid_color, self, config.TITLE_GRID_COLOR)
         if color.isValid():
             self.canvas.grid_color = color
             self.canvas.update()
 
     def clear_canvas(self) -> None:
         reply = QMessageBox.question(
-            self, "Clear Canvas", "Are you sure you want to clear the canvas?",
+            self, config.TITLE_CLEAR_CANVAS, config.MSG_CLEAR_CONFIRM,
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         if reply == QMessageBox.StandardButton.Yes:
@@ -153,8 +153,7 @@ class TilfEditor(QMainWindow):
         self.canvas.update()
 
     def shift_canvas(self) -> None:
-        options = ["Left", "Right", "Up", "Down"]
-        dialog = MultipleChoice("Shift Canvas", "Shift canvas 1px to the:", options, self)
+        dialog = MultipleChoice(config.TITLE_SHIFT_CANVAS, config.MSG_SHIFT_CANVAS, config.SHIFT_OPTIONS, self)
         if dialog.exec():
             selected = dialog.get_selected_option()
             if selected:
@@ -165,9 +164,9 @@ class TilfEditor(QMainWindow):
 
     def _update_window_title(self) -> None:
         filename = os.path.basename(
-            self.app_state.current_file_path) if self.app_state.current_file_path else "Untitled"
-        dirty_marker = "*" if self.app_state.is_dirty else ""
-        return self.setWindowTitle(f"{dirty_marker}{filename} - {config.APP_NAME}")
+            self.app_state.current_file_path) if self.app_state.current_file_path else config.UNTITLED_NAME
+        dirty_marker = config.DIRTY_MARKER if self.app_state.is_dirty else ""
+        return self.setWindowTitle(config.WINDOW_TITLE_FMT.format(marker=dirty_marker, name=filename))
 
     def _update_status_bar(self, col: int, row: int, color: QColor) -> None:
         try:
@@ -189,7 +188,7 @@ class TilfEditor(QMainWindow):
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         mime_data = event.mimeData()
         if mime_data.hasUrls() and any(
-                u.isLocalFile() and u.toLocalFile().lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))
+                u.isLocalFile() and u.toLocalFile().lower().endswith(config.SUPPORTED_EXTENSIONS)
                 for u in mime_data.urls()):
             return event.acceptProposedAction()
         return None
@@ -208,7 +207,7 @@ class TilfEditor(QMainWindow):
             self.file_manager.autosave_on_exit()
 
             reply = QMessageBox.question(
-                self, "Unsaved Changes", "You have unsaved changes. Do you want to save before quitting?",
+                self, config.TITLE_UNSAVED, config.MSG_SAVE_BEFORE_QUIT,
                 QMessageBox.StandardButton.Save |
                 QMessageBox.StandardButton.Discard |
                 QMessageBox.StandardButton.Cancel

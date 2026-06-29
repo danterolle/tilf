@@ -99,6 +99,7 @@ class ToolType:
     EYEDROPPER = "eyedropper"
     RECT = "rect"
     ELLIPSE = "ellipse"
+    LINE = "line"
 
 # The key (e.g., "pencil") is like the tool ID
 TOOLS: Dict[str, Dict[str, Any]] = {
@@ -125,6 +126,10 @@ TOOLS: Dict[str, Dict[str, Any]] = {
     ToolType.ELLIPSE: {
         "text": "Circle", "icon": "assets/icons/circle.png", "shortcut": "C",
         "tooltip": "Draw an ellipse. Hold Shift for a perfect circle."
+    },
+    ToolType.LINE: {
+        "text": "Line", "icon": "", "shortcut": "L",
+        "tooltip": "Draw a straight line. Hold Shift to constrain to horizontal or vertical."
     },
 }
 

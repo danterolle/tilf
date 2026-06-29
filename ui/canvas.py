@@ -18,6 +18,7 @@ from tools.fill import Fill
 from tools.eyedropper import Eyedropper
 from tools.rect import Rect
 from tools.ellipse import Ellipse
+from tools.line import Line
 
 class Canvas(QWidget):
     pixel_hovered = Signal(int, int, QColor)
@@ -77,6 +78,7 @@ class Canvas(QWidget):
             config.ToolType.EYEDROPPER: Eyedropper(self, self.app_state),
             config.ToolType.RECT: Rect(self, self.app_state),
             config.ToolType.ELLIPSE: Ellipse(self, self.app_state),
+            config.ToolType.LINE: Line(self, self.app_state),
         }
 
     def _connect_state(self) -> None:

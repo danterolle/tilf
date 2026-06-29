@@ -8,6 +8,7 @@ from PySide6.QtGui import QImage, QPainter, QColor
 from ui.canvas import Canvas
 from state import AppState
 from utils import config
+from utils.log import get_logger
 from ui.dialogs.new_canvas import NewCanvas
 
 class FileManager:
@@ -87,9 +88,9 @@ class FileManager:
             basename = os.path.splitext(os.path.basename(self.app_state.current_file_path or ""))[0] or "sprite"
             autosave_path = os.path.join(autosaves_dir, f"{basename}_{timestamp}.png")
             self.export_image(autosave_path, config.IMAGE_FORMAT_PNG, is_transparent=True)
-            print(config.MSG_AUTOSAVE_SUCCESS_FMT.format(path=autosave_path))
+            get_logger().info(config.MSG_AUTOSAVE_SUCCESS_FMT.format(path=autosave_path))
         except Exception as e:
-            print(config.MSG_AUTOSAVE_ERROR_FMT.format(error=e), file=sys.stderr)
+            get_logger().error(config.MSG_AUTOSAVE_ERROR_FMT.format(error=e))
 
 
     def export_image(self, filename: str, file_format: Optional[str], is_transparent: bool) -> None:

@@ -8,6 +8,7 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import QWidget
 from state import AppState
 from utils import config
+from utils.log import get_logger
 
 if TYPE_CHECKING:
     from tools.base_tool import BaseTool
@@ -87,7 +88,7 @@ class Canvas(QWidget):
             self._current_tool = self._tools[tool_name]
             self.setCursor(self._current_tool.get_cursor())
         else:
-            print(config.MSG_TOOL_WARNING_FMT.format(tool_name=tool_name))
+            get_logger().warning(config.MSG_TOOL_WARNING_FMT.format(tool_name=tool_name))
 
     def reset_canvas(
             self, columns: int, rows: int, clear_history: bool = False,

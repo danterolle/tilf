@@ -1,5 +1,5 @@
 import os
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QColor, QDragEnterEvent, QDropEvent, QPixmap, QCloseEvent
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QStatusBar, QColorDialog,
@@ -26,6 +26,7 @@ class TilfEditor(QMainWindow):
 
         self.canvas = Canvas(self.app_state)
         self.file_manager = FileManager(self, self.app_state, self.canvas)
+        self._preview_dirty = False
 
         self._setup_central_widget()
         self._setup_status_bar()
@@ -112,7 +113,7 @@ class TilfEditor(QMainWindow):
     def _connect_signals(self) -> None:
         self.app_state.dirty_changed.connect(self._update_window_title)
         self.app_state.file_path_changed.connect(self._update_window_title)
-        self.app_state.image_changed.connect(self._refresh_preview)
+        self.app_state.image_changed.connect(self._schedule_preview_refresh)
 
         self.canvas.pixel_hovered.connect(self._update_status_bar)
         self.canvas.zoom_changed.connect(
@@ -174,7 +175,13 @@ class TilfEditor(QMainWindow):
         except RuntimeError:
             pass
 
+    def _schedule_preview_refresh(self) -> None:
+        if not self._preview_dirty:
+            self._preview_dirty = True
+            QTimer.singleShot(50, self._refresh_preview)
+
     def _refresh_preview(self) -> None:
+        self._preview_dirty = False
         if self.canvas.image.isNull():
             return None
         pixmap = QPixmap.fromImage(self.canvas.image)

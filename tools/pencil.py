@@ -1,9 +1,13 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QMouseEvent, QColor
 
 from state import AppState
 from tools.base_tool import BaseTool
-from ui.canvas import Canvas
+
+if TYPE_CHECKING:
+    from ui.canvas import Canvas
 
 
 class Pencil(BaseTool):

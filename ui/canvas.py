@@ -11,20 +11,12 @@ from utils import config
 
 if TYPE_CHECKING:
     from tools.base_tool import BaseTool
-# Why TYPE_CHECKING?
-# A "circular import" error had occurred.
-#
-# canvas.py could import the tool classes (like Pencil, Eraser, etc...) from the tools module,
-# but the tool classes imported the Canvas class from this same file.
-#
-# This can create an ugly _dependency cycle_ that Python could **not** resolve at startup,
-# causing a "circular import" error.
-#
-# One solution is to import types only during static analysis.
-# That's because `TYPE_CHECKING` is set to `True` only when a type checker
-# is analyzing the code, while it is `False` during normal execution.
-#
-# For more: https://docs.python.org/3/library/typing.html#typing.TYPE_CHECKING
+from tools.pencil import Pencil
+from tools.eraser import Eraser
+from tools.fill import Fill
+from tools.eyedropper import Eyedropper
+from tools.rect import Rect
+from tools.ellipse import Ellipse
 
 class Canvas(QWidget):
     pixel_hovered = Signal(int, int, QColor)
@@ -73,40 +65,7 @@ class Canvas(QWidget):
         painter.end()
         return pixmap
 
-    # https://peps.python.org/pep-0484/#forward-references
-    #
-    # Since `BaseTool` is imported only inside the `TYPE_CHECKING` block,
-    # it is not directly available at runtime here.
-    #
-    # So, by using the class name as a string ('BaseTool'),
-    # instead of the actual type (BaseTool),
-    # we are able to create the tool instances later.
-    #
-    # Remember: the type hint is _only_ used for type checking,
-    # not for runtime usage.
-    #
-    #### OR
-    #
-    # place `from __future__ import annotations` at the top of the file.
-    # It will postpone the evaluation of type hints:
-    # annotations automatically become strings and are resolved
-    # only by type checkers, and not at runtime.
     def _create_tools(self) -> Dict[str, BaseTool]:
-        # The imports of the concrete tool classes are moved here,
-        # inside the method instead of at the module level.
-        #
-        # Why? This postpones their import until the `_create_tools` method is
-        # _actually_ called. At that point, the `canvas` module has already been
-        # fully loaded, and the tools can import `Canvas` without issues,
-        #
-        # thus breaking the dependency cycle.
-        from tools.pencil import Pencil
-        from tools.eraser import Eraser
-        from tools.fill import Fill
-        from tools.eyedropper import Eyedropper
-        from tools.rect import Rect
-        from tools.ellipse import Ellipse
-
         return {
             config.ToolType.PENCIL: Pencil(self, self.app_state),
             config.ToolType.ERASER: Eraser(self, self.app_state),

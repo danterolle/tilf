@@ -1,9 +1,13 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QMouseEvent, QPainter, QCursor
 
 from state import AppState
-from ui.canvas import Canvas
+
+if TYPE_CHECKING:
+    from ui.canvas import Canvas
 
 
 class BaseTool(ABC):

@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tilf"
+version = "0.2"
+description = "Tiny Elf - A minimal pixel art editor"
+license = {text = "GPL-3.0-only"}
+authors = [{name = "Dario Camonita", email = "danterolle@catania.linux.it"}]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

@@ -20,7 +20,6 @@ class Shape(BaseTool):
     def __init__(self, canvas: Canvas, app_state: AppState) -> None:
         super().__init__(canvas, app_state)
         self._shape_start_pos: QPoint | None = None
-        self._shape_end_pos: QPoint | None = None
         self._preview_image: QImage | None = None
 
     def mousePressEvent(self, event: QMouseEvent, cell: QPoint) -> bool:
@@ -32,11 +31,10 @@ class Shape(BaseTool):
         if self._shape_start_pos is None:
             return False
 
-        self._shape_end_pos = cell
         self._preview_image = self.canvas.create_shape_preview(
             self.shape_kind,
             self._shape_start_pos,
-            self._shape_end_pos,
+            cell,
             bool(event.modifiers() & Qt.KeyboardModifier.ShiftModifier),
             self.app_state.primary_color,
         )
@@ -47,17 +45,15 @@ class Shape(BaseTool):
         if self._shape_start_pos is None:
             return False
 
-        self._shape_end_pos = cell
         changed = self.canvas.draw_shape(
             self.shape_kind,
             self._shape_start_pos,
-            self._shape_end_pos,
+            cell,
             bool(event.modifiers() & Qt.KeyboardModifier.ShiftModifier),
             self.app_state.primary_color,
         )
         self._preview_image = None
         self._shape_start_pos = None
-        self._shape_end_pos = None
         self.canvas.update()
         return changed
 

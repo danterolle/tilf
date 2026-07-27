@@ -17,13 +17,9 @@ class CanvasDocument:
         background_color: QColor,
         *,
         history_limit: int,
-        tile_cols: int,
-        tile_rows: int,
         tile_size: int,
     ) -> None:
         self.history_limit = history_limit
-        self.tile_cols = tile_cols
-        self.tile_rows = tile_rows
         self.tile_size = tile_size
         self.background_color = background_color
         self.image = QImage()
@@ -40,16 +36,10 @@ class CanvasDocument:
         background_color: QColor,
         *,
         clear_history: bool = False,
-        tile_cols: int = 0,
-        tile_rows: int = 0,
         tile_size: int = 0,
     ) -> None:
         self.columns = columns
         self.rows = rows
-        if tile_cols:
-            self.tile_cols = tile_cols
-        if tile_rows:
-            self.tile_rows = tile_rows
         if tile_size:
             self.tile_size = tile_size
 

@@ -56,10 +56,6 @@ class AppState(QObject):
             self._secondary_color = color
             self.secondary_color_changed.emit(color)
 
-    @property
-    def current_tool(self) -> str:
-        return self._current_tool
-
     def set_tool(self, tool_name: str) -> None:
         if self._current_tool != tool_name and tool_name in config.TOOLS:
             self._current_tool = tool_name

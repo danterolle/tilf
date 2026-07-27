@@ -5,7 +5,8 @@ import time
 from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QWidget
 
-from core.image_io import export_image, infer_image_format
+from core.image_io import export_image as save_image
+from core.image_io import infer_image_format
 from state import AppState
 from ui.canvas import Canvas
 from ui.dialogs.new_canvas import NewCanvas
@@ -24,10 +25,10 @@ class FileManager:
             return
         dialog = NewCanvas(self.parent)
         if dialog.exec():
-            width, height, tile_cols, tile_rows, tile_size = dialog.get_size()
+            width, height, tile_size = dialog.get_size()
             self.canvas.reset_canvas(
                 width, height, clear_history=True,
-                tile_cols=tile_cols, tile_rows=tile_rows, tile_size=tile_size,
+                tile_size=tile_size,
             )
             self.app_state.set_file_path(None)
 
@@ -58,7 +59,7 @@ class FileManager:
         file_format = infer_image_format(path)
         is_transparent = (file_format == config.IMAGE_FORMAT_PNG)
 
-        if not self.export_image(path, file_format, is_transparent):
+        if not save_image(self.canvas.image, path, file_format, is_transparent):
             self._show_save_error(path)
             return False
 
@@ -70,7 +71,7 @@ class FileManager:
         if not path:
             return False
 
-        if not self.export_image(path, file_format, is_transparent):
+        if not save_image(self.canvas.image, path, file_format, is_transparent):
             self._show_save_error(path)
             return False
 
@@ -90,7 +91,7 @@ class FileManager:
             basename = os.path.splitext(os.path.basename(self.app_state.current_file_path or ""))[0] or "sprite"
             autosave_path = os.path.join(autosaves_dir, f"{basename}_{timestamp}.png")
 
-            if self.export_image(autosave_path, config.IMAGE_FORMAT_PNG, is_transparent=True):
+            if save_image(self.canvas.image, autosave_path, config.IMAGE_FORMAT_PNG, is_transparent=True):
                 get_logger().info(config.MSG_AUTOSAVE_SUCCESS_FMT.format(path=autosave_path))
             else:
                 get_logger().error(
@@ -98,9 +99,6 @@ class FileManager:
                 )
         except OSError as error:
             get_logger().error(config.MSG_AUTOSAVE_ERROR_FMT.format(error=error))
-
-    def export_image(self, filename: str, file_format: str | None, is_transparent: bool) -> bool:
-        return export_image(self.canvas.image, filename, file_format, is_transparent)
 
     def _confirm_discard_if_needed(self) -> bool:
         if not self.app_state.is_dirty:

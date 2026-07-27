@@ -44,8 +44,6 @@ class Canvas(QWidget):
             config.DEFAULT_HEIGHT,
             self.app_state.secondary_color,
             history_limit=config.HISTORY_LIMIT,
-            tile_cols=config.DEFAULT_TILE_COLS,
-            tile_rows=config.DEFAULT_TILE_ROWS,
             tile_size=config.DEFAULT_TILE_SIZE,
         )
         self.cell_size: int = config.DEFAULT_ZOOM
@@ -58,8 +56,6 @@ class Canvas(QWidget):
         self._tools: dict[str, BaseTool] = self._create_tools()
         self._current_tool: BaseTool = self._tools[config.ToolType.PENCIL]
 
-        self._checkerboard_color_1: QColor = config.CHECKERBOARD_COLOR_1
-        self._checkerboard_color_2: QColor = config.CHECKERBOARD_COLOR_2
         self._checkerboard_pixmap: QPixmap = self._create_checkerboard_pixmap(16)
 
         self.setMouseTracking(True)
@@ -71,12 +67,10 @@ class Canvas(QWidget):
         pixmap = QPixmap(size * 2, size * 2)
         pixmap.fill(Qt.GlobalColor.transparent)
         painter = QPainter(pixmap)
-        color1 = self._checkerboard_color_1
-        color2 = self._checkerboard_color_2
-        painter.fillRect(0, 0, size, size, color1)
-        painter.fillRect(size, size, size, size, color1)
-        painter.fillRect(size, 0, size, size, color2)
-        painter.fillRect(0, size, size, size, color2)
+        painter.fillRect(0, 0, size, size, config.CHECKERBOARD_COLOR_1)
+        painter.fillRect(size, size, size, size, config.CHECKERBOARD_COLOR_1)
+        painter.fillRect(size, 0, size, size, config.CHECKERBOARD_COLOR_2)
+        painter.fillRect(0, size, size, size, config.CHECKERBOARD_COLOR_2)
         painter.end()
         return pixmap
 
@@ -119,15 +113,13 @@ class Canvas(QWidget):
 
     def reset_canvas(
             self, columns: int, rows: int, clear_history: bool = False,
-            tile_cols: int = 0, tile_rows: int = 0, tile_size: int = 0,
+            tile_size: int = 0,
     ) -> None:
         self.document.reset(
             columns,
             rows,
             self.app_state.secondary_color,
             clear_history=clear_history,
-            tile_cols=tile_cols,
-            tile_rows=tile_rows,
             tile_size=tile_size,
         )
         if clear_history:
@@ -280,15 +272,6 @@ class Canvas(QWidget):
         painter.drawImage(target_rect, self.image)
 
         self._current_tool.paint(painter)
-
-        if self._is_drawing and hasattr(self._current_tool, '_shape_end_pos'):
-            cell_pos = getattr(self._current_tool, '_shape_end_pos', None)
-
-            if cell_pos is not None:
-                painter.setPen(QPen(Qt.GlobalColor.red, 1))
-                pixel_x = cell_pos.x() * self.cell_size
-                pixel_y = cell_pos.y() * self.cell_size
-                painter.drawRect(pixel_x, pixel_y, self.cell_size - 1, self.cell_size - 1)
 
         if self.is_grid_visible and self.cell_size >= 4:
             self._draw_grid(painter, target_rect)

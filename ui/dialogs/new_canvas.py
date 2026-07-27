@@ -99,11 +99,9 @@ class NewCanvas(QDialog):
             f" ({tile_width} x {tile_height} tile grid)"
         )
 
-    def get_size(self) -> tuple[int, int, int, int, int]:
+    def get_size(self) -> tuple[int, int, int]:
         return (
             self.width_spin.value(),
             self.height_spin.value(),
-            self.cols_spin.value(),
-            self.rows_spin.value(),
             self.tile_size_spin.value(),
         )

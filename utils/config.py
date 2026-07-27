@@ -2,6 +2,7 @@ from typing import Any, Dict, List
 
 from PySide6.QtGui import QColor
 
+APP_VERSION = "0.3"
 APP_NAME = "Tilf - Pixel Art Editor"
 DEFAULT_TILE_COLS = 8
 DEFAULT_TILE_ROWS = 6

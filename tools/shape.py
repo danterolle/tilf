@@ -1,8 +1,10 @@
 from __future__ import annotations
+
 from abc import abstractmethod
 from typing import TYPE_CHECKING
+
 from PySide6.QtCore import QPoint, QRect, Qt
-from PySide6.QtGui import QMouseEvent, QPainter, QImage, QPen
+from PySide6.QtGui import QImage, QMouseEvent, QPainter, QPen
 
 from state import AppState
 from tools.base_tool import BaseTool
@@ -12,7 +14,9 @@ if TYPE_CHECKING:
 
 
 class Shape(BaseTool):
-    def __init__(self, canvas: Canvas, app_state: AppState):
+    is_drag_tool = True
+
+    def __init__(self, canvas: Canvas, app_state: AppState) -> None:
         super().__init__(canvas, app_state)
         self._shape_start_pos: QPoint | None = None
         self._shape_end_pos: QPoint | None = None
@@ -22,24 +26,30 @@ class Shape(BaseTool):
         self._shape_start_pos = cell
         self._preview_image = QImage(self.canvas.image.size(), QImage.Format.Format_ARGB32)
         self._preview_image.fill(Qt.GlobalColor.transparent)
-        return True
+        return False
 
-    def mouseMoveEvent(self, event: QMouseEvent, cell: QPoint):
-        if not self._preview_image: return
+    def mouseMoveEvent(self, event: QMouseEvent, cell: QPoint) -> bool:
+        if self._preview_image is None:
+            return False
+
         self._shape_end_pos = cell
         self._draw_shape_preview(bool(event.modifiers() & Qt.KeyboardModifier.ShiftModifier))
+        return False
 
-    def mouseReleaseEvent(self, event: QMouseEvent, cell: QPoint):
-        if not self._shape_start_pos: return
+    def mouseReleaseEvent(self, event: QMouseEvent, cell: QPoint) -> bool:
+        if self._shape_start_pos is None:
+            return False
+
         self._shape_end_pos = cell
-        self._draw_shape_to_canvas(bool(event.modifiers() & Qt.KeyboardModifier.ShiftModifier))
+        changed = self._draw_shape_to_canvas(bool(event.modifiers() & Qt.KeyboardModifier.ShiftModifier))
         self._preview_image = None
         self._shape_start_pos = None
         self._shape_end_pos = None
         self.canvas.update()
+        return changed
 
-    def paint(self, painter: QPainter):
-        if self._preview_image:
+    def paint(self, painter: QPainter) -> None:
+        if self._preview_image is not None:
             target_rect = QRect(
                 0,
                 0,
@@ -82,8 +92,10 @@ class Shape(BaseTool):
 
         return QRect(left, top, width, height)
 
-    def _draw_shape_preview(self, force_square: bool):
-        if not self._preview_image: return
+    def _draw_shape_preview(self, force_square: bool) -> None:
+        if self._preview_image is None:
+            return
+
         self._preview_image.fill(Qt.GlobalColor.transparent)
         painter = QPainter(self._preview_image)
         painter.setPen(QPen(self.app_state.primary_color))
@@ -93,14 +105,17 @@ class Shape(BaseTool):
         painter.end()
         self.canvas.update()
 
-    def _draw_shape_to_canvas(self, force_square: bool):
+    def _draw_shape_to_canvas(self, force_square: bool) -> bool:
+        rect = self._get_shape_rect(force_square)
+        if rect.isNull():
+            return False
+
         painter = QPainter(self.canvas.image)
         painter.setPen(QPen(self.app_state.primary_color))
-
-        rect = self._get_shape_rect(force_square)
         self._draw_current_shape(painter, rect)
         painter.end()
+        return True
 
     @abstractmethod
-    def _draw_current_shape(self, painter: QPainter, rect: QRect):
-        pass
+    def _draw_current_shape(self, painter: QPainter, rect: QRect) -> None:
+        return None

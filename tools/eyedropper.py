@@ -1,5 +1,6 @@
 from PySide6.QtCore import QPoint
 from PySide6.QtGui import QMouseEvent, QColor
+
 from tools.base_tool import BaseTool
 from utils import config
 
@@ -11,8 +12,8 @@ class Eyedropper(BaseTool):
         self.app_state.set_tool(config.ToolType.PENCIL)
         return False
 
-    def mouseMoveEvent(self, event: QMouseEvent, cell: QPoint):
-        pass
+    def mouseMoveEvent(self, event: QMouseEvent, cell: QPoint) -> bool:
+        return False
 
-    def mouseReleaseEvent(self, event: QMouseEvent, cell: QPoint):
-        pass
+    def mouseReleaseEvent(self, event: QMouseEvent, cell: QPoint) -> bool:
+        return False

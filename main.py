@@ -1,14 +1,15 @@
-import sys
 import os
-import logging
-from PySide6.QtWidgets import QApplication
+import sys
+
 from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication
 
 from state import AppState
 from ui.editor import TilfEditor
 from utils import config
+from utils.log import get_logger, setup as setup_logging
 from utils.resource_path import get_resource_path
-from utils.log import setup as setup_logging, get_logger
+
 
 def main() -> None:
     setup_logging()
@@ -26,7 +27,7 @@ def main() -> None:
 
     stylesheet_path = get_resource_path(config.STYLESHEET_FILENAME)
     try:
-        with open(stylesheet_path, "r") as f:
+        with open(stylesheet_path, "r", encoding="utf-8") as f:
             app.setStyleSheet(f.read())
         logger.info(config.MSG_STYLESHEET_LOADED_FMT.format(path=stylesheet_path))
     except FileNotFoundError:

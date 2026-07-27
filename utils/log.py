@@ -6,6 +6,8 @@ _LOGGER_NAME = "tilf"
 def setup(level: int = logging.INFO) -> None:
     logger = logging.getLogger(_LOGGER_NAME)
     logger.setLevel(level)
+    if logger.handlers:
+        return
 
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter(

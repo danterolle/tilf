@@ -1,29 +1,34 @@
 from __future__ import annotations
-from typing import Dict, List, TYPE_CHECKING
-from PySide6.QtCore import Qt, QRect, Signal, QPoint
+
+from typing import TYPE_CHECKING
+
+from PySide6.QtCore import QPoint, QRect, Qt, Signal
 from PySide6.QtGui import (
-    QPainter, QColor, QPen, QImage, QPaintEvent, QMouseEvent,
-    QWheelEvent, QPixmap, QBitmap
+    QBitmap, QColor, QImage, QMouseEvent, QPainter, QPaintEvent, QPen,
+    QPixmap, QWheelEvent,
 )
 from PySide6.QtWidgets import QWidget
+
 from state import AppState
 from utils import config
 from utils.log import get_logger
 
+from tools.ellipse import Ellipse
+from tools.eraser import Eraser
+from tools.eyedropper import Eyedropper
+from tools.fill import Fill
+from tools.pencil import Pencil
+from tools.rect import Rect
+
 if TYPE_CHECKING:
     from tools.base_tool import BaseTool
-from tools.pencil import Pencil
-from tools.eraser import Eraser
-from tools.fill import Fill
-from tools.eyedropper import Eyedropper
-from tools.rect import Rect
-from tools.ellipse import Ellipse
+
 
 class Canvas(QWidget):
     pixel_hovered = Signal(int, int, QColor)
     zoom_changed = Signal(int)
 
-    def __init__(self, app_state: AppState):
+    def __init__(self, app_state: AppState) -> None:
         super().__init__()
         self.app_state = app_state
         self.image: QImage = QImage()
@@ -37,11 +42,12 @@ class Canvas(QWidget):
         self.tile_size: int = config.DEFAULT_TILE_SIZE
         self._current_bg_color: QColor = self.app_state.secondary_color
 
-        self._undo_stack: List[QImage] = []
-        self._redo_stack: List[QImage] = []
+        self._undo_stack: list[QImage] = []
+        self._redo_stack: list[QImage] = []
+        self._pending_undo_snapshot: QImage | None = None
 
         self._is_drawing: bool = False
-        self._tools: Dict[str, BaseTool] = self._create_tools()
+        self._tools: dict[str, BaseTool] = self._create_tools()
         self._current_tool: BaseTool = self._tools[config.ToolType.PENCIL]
 
         self._checkerboard_color_1: QColor = config.CHECKERBOARD_COLOR_1
@@ -52,10 +58,6 @@ class Canvas(QWidget):
         self._connect_state()
         self.reset_canvas(config.DEFAULT_WIDTH, config.DEFAULT_HEIGHT, clear_history=True)
 
-    # A small pixmap is cached once and tiled via `drawTiledPixmap()`,
-    # avoiding redrawing hundreds of rectangles on _every_ paint event.
-    #
-    # Check `paintEvent()` for more details.
     def _create_checkerboard_pixmap(self, size: int) -> QPixmap:
         pixmap = QPixmap(size * 2, size * 2)
         pixmap.fill(Qt.GlobalColor.transparent)
@@ -69,7 +71,7 @@ class Canvas(QWidget):
         painter.end()
         return pixmap
 
-    def _create_tools(self) -> Dict[str, BaseTool]:
+    def _create_tools(self) -> dict[str, BaseTool]:
         return {
             config.ToolType.PENCIL: Pencil(self, self.app_state),
             config.ToolType.ERASER: Eraser(self, self.app_state),
@@ -108,18 +110,22 @@ class Canvas(QWidget):
         if clear_history:
             self._undo_stack.clear()
             self._redo_stack.clear()
+            self._pending_undo_snapshot = None
         self._update_size()
         self.app_state.notify_image_changed()
 
     def load_image(self, image: QImage) -> None:
         self._undo_stack.clear()
         self._redo_stack.clear()
+        self._pending_undo_snapshot = None
         self.image = image.convertToFormat(QImage.Format.Format_ARGB32)
         self.columns, self.rows = self.image.width(), self.image.height()
-        # Assume transparent images have a transparent background color
-        self.app_state.set_secondary_color(QColor(config.COLOR_TRANSPARENT))
+
+        transparent = QColor(config.COLOR_TRANSPARENT)
+        self._current_bg_color = transparent
+        self.app_state.set_secondary_color(transparent)
+
         self._current_bg_color = self.app_state.secondary_color
-        self._push_undo()
         self._update_size()
         self.app_state.notify_image_changed()
 
@@ -136,12 +142,12 @@ class Canvas(QWidget):
         self._traverse_history(self._redo_stack, self._undo_stack)
 
     def shift_image(self, direction: str) -> None:
-        self._push_undo()
-
         dx, dy = config.SHIFT_OFFSETS.get(direction, (0, 0))
 
         if dx == 0 and dy == 0:
             return
+
+        self._push_undo()
 
         temp_image = QImage(self.image.size(), QImage.Format.Format_ARGB32)
         temp_image.fill(self.app_state.secondary_color)
@@ -181,17 +187,28 @@ class Canvas(QWidget):
         self.app_state.notify_image_changed()
 
     def _push_undo(self) -> None:
-        self._undo_stack.append(self.image.copy())
+        self._push_undo_snapshot(self.image.copy())
+
+    def _push_undo_snapshot(self, snapshot: QImage) -> None:
+        self._undo_stack.append(snapshot)
         if len(self._undo_stack) > config.HISTORY_LIMIT:
             self._undo_stack.pop(0)
-        return self._redo_stack.clear()
+        self._redo_stack.clear()
+
+    def _commit_pending_undo(self) -> None:
+        if self._pending_undo_snapshot is None:
+            return
+        self._push_undo_snapshot(self._pending_undo_snapshot)
+        self._pending_undo_snapshot = None
 
     def _traverse_history(
             self,
-            source_stack: List[QImage],
-            dest_stack: List[QImage]
+            source_stack: list[QImage],
+            dest_stack: list[QImage]
     ) -> None:
-        if not source_stack: return
+        if not source_stack:
+            return
+
         dest_stack.append(self.image.copy())
         self.image = source_stack.pop()
         self.columns, self.rows = self.image.width(), self.image.height()
@@ -223,7 +240,7 @@ class Canvas(QWidget):
         if self._is_drawing and hasattr(self._current_tool, '_shape_end_pos'):
             cell_pos = getattr(self._current_tool, '_shape_end_pos', None)
 
-            if cell_pos:
+            if cell_pos is not None:
                 painter.setPen(QPen(Qt.GlobalColor.red, 1))
                 pixel_x = cell_pos.x() * self.cell_size
                 pixel_y = cell_pos.y() * self.cell_size
@@ -235,14 +252,18 @@ class Canvas(QWidget):
     def _draw_grid(self, painter: QPainter, target_rect: QRect) -> None:
         width, height, step = target_rect.width(), target_rect.height(), self.cell_size
         painter.setPen(QPen(self.grid_color, 1))
-        for x in range(0, width + 1, step): painter.drawLine(x, 0, x, height)
-        for y in range(0, height + 1, step): painter.drawLine(0, y, width, y)
+        for x in range(0, width + 1, step):
+            painter.drawLine(x, 0, x, height)
+        for y in range(0, height + 1, step):
+            painter.drawLine(0, y, width, y)
 
         if self.tile_size > 1:
             painter.setPen(QPen(self.grid_color, 2))
             tile_step = step * self.tile_size
-            for x in range(0, width + 1, tile_step): painter.drawLine(x, 0, x, height)
-            for y in range(0, height + 1, tile_step): painter.drawLine(0, y, width, y)
+            for x in range(0, width + 1, tile_step):
+                painter.drawLine(x, 0, x, height)
+            for y in range(0, height + 1, tile_step):
+                painter.drawLine(0, y, width, y)
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         pos = event.position().toPoint()
@@ -257,13 +278,22 @@ class Canvas(QWidget):
             self.app_state.set_tool(config.ToolType.PENCIL)
             return
 
-        self._is_drawing = True
+        if event.button() != Qt.MouseButton.LeftButton:
+            return
+
         snapshot = self.image.copy()
+        if self._current_tool.is_drag_tool:
+            self._pending_undo_snapshot = snapshot
+            self._is_drawing = True
+            changed = self._current_tool.mousePressEvent(event, cell)
+            if changed:
+                self._commit_pending_undo()
+                self.app_state.notify_image_changed()
+            return
+
         if self._current_tool.mousePressEvent(event, cell):
-            self._undo_stack.append(snapshot)
-            if len(self._undo_stack) > config.HISTORY_LIMIT:
-                self._undo_stack.pop(0)
-            self._redo_stack.clear()
+            self._push_undo_snapshot(snapshot)
+            self.app_state.notify_image_changed()
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         pos = event.position().toPoint()
@@ -272,16 +302,24 @@ class Canvas(QWidget):
         if 0 <= cell.x() < self.columns and 0 <= cell.y() < self.rows:
             self.pixel_hovered.emit(cell.x(), cell.y(), QColor(self.image.pixel(cell)))
             if self._is_drawing:
-                self._current_tool.mouseMoveEvent(event, cell)
-                self.app_state.notify_image_changed()
+                changed = self._current_tool.mouseMoveEvent(event, cell)
+                if changed:
+                    self._commit_pending_undo()
+                    self.app_state.notify_image_changed()
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-        if not self._is_drawing: return
+        if not self._is_drawing:
+            return
+
         pos = event.position().toPoint()
         cell = QPoint(pos.x() // self.cell_size, pos.y() // self.cell_size)
-        self._current_tool.mouseReleaseEvent(event, cell)
+        changed = self._current_tool.mouseReleaseEvent(event, cell)
+        if changed:
+            self._commit_pending_undo()
+            self.app_state.notify_image_changed()
+
         self._is_drawing = False
-        self.app_state.notify_image_changed()
+        self._pending_undo_snapshot = None
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         delta = event.angleDelta().y() // 120

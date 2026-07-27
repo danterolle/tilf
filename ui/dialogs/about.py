@@ -2,14 +2,14 @@ import os
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import (
-    QDialog, QHBoxLayout, QVBoxLayout, QLabel, QWidget
-)
+from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QVBoxLayout, QWidget
+
 from utils import config
 from utils.resource_path import get_resource_path
 
+
 class About(QDialog):
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.setWindowTitle(config.TITLE_ABOUT)
         self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowCloseButtonHint)
@@ -44,7 +44,7 @@ class About(QDialog):
             "pixel-level precision.<br>"
             "<br>It features essential tools like a pencil, fill bucket, and shapes, along with a grid system to "
             "easily create sprites and small tiles.<br>"
-            "<br><a href="f'https://github.com/danterolle/tilf'">PRs are welcome.</a><br>"
+            '<br><a href="https://github.com/danterolle/tilf">PRs are welcome.</a><br>'
             "<br>Thank you for using this tool!<br>"
             "<br>Created by Dario 'danterolle' Camonita<br>"
             "<br>Email: danterolle@catania.linux.it<br>"

@@ -1,18 +1,20 @@
 import os
+
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QColor, QDragEnterEvent, QDropEvent, QPixmap, QCloseEvent
+from PySide6.QtGui import QColor, QCloseEvent, QDragEnterEvent, QDropEvent, QPixmap
 from PySide6.QtWidgets import (
-    QMainWindow, QWidget, QStatusBar, QColorDialog,
-    QScrollArea, QMessageBox, QLabel, QSlider,
-    QHBoxLayout, QDockWidget, QVBoxLayout, QPushButton
+    QColorDialog, QDockWidget, QHBoxLayout, QLabel, QMainWindow,
+    QMessageBox, QPushButton, QScrollArea, QSlider, QStatusBar, QVBoxLayout,
+    QWidget,
 )
-from state import AppState
-from utils import config
+
 from file_manager import FileManager
+from state import AppState
 from ui.canvas import Canvas
-from ui.toolbar import Toolbar
 from ui.dialogs.about import About
 from ui.dialogs.multiple_choice import MultipleChoice
+from ui.toolbar import Toolbar
+from utils import config
 
 
 class TilfEditor(QMainWindow):
@@ -125,14 +127,16 @@ class TilfEditor(QMainWindow):
 
     def choose_primary_color(self) -> None:
         color = QColorDialog.getColor(self.app_state.primary_color, self, config.TITLE_PRIMARY_COLOR)
-        if color.isValid(): self.app_state.set_primary_color(color)
+        if color.isValid():
+            self.app_state.set_primary_color(color)
 
     def choose_secondary_color(self) -> None:
         color = QColorDialog.getColor(
             self.app_state.secondary_color, self, config.TITLE_SECONDARY_COLOR,
             QColorDialog.ColorDialogOption.ShowAlphaChannel
         )
-        if color.isValid(): self.app_state.set_secondary_color(color)
+        if color.isValid():
+            self.app_state.set_secondary_color(color)
 
     def choose_grid_color(self) -> None:
         color = QColorDialog.getColor(self.canvas.grid_color, self, config.TITLE_GRID_COLOR)
@@ -195,13 +199,20 @@ class TilfEditor(QMainWindow):
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         mime_data = event.mimeData()
         if mime_data.hasUrls() and any(
-                u.isLocalFile() and u.toLocalFile().lower().endswith(config.SUPPORTED_EXTENSIONS)
-                for u in mime_data.urls()):
+            u.isLocalFile() and u.toLocalFile().lower().endswith(config.SUPPORTED_EXTENSIONS)
+            for u in mime_data.urls()
+        ):
             return event.acceptProposedAction()
         return None
 
     def dropEvent(self, event: QDropEvent) -> None:
-        url = next((u for u in event.mimeData().urls() if u.isLocalFile()), None)
+        url = next(
+            (
+                u for u in event.mimeData().urls()
+                if u.isLocalFile() and u.toLocalFile().lower().endswith(config.SUPPORTED_EXTENSIONS)
+            ),
+            None,
+        )
         if url:
             self.file_manager.open_file(path=url.toLocalFile())
             return event.acceptProposedAction()
@@ -209,8 +220,7 @@ class TilfEditor(QMainWindow):
 
     def closeEvent(self, event: QCloseEvent) -> None:
         if self.app_state.is_dirty:
-            # Perform the autosave as the very first step
-            # as soon as the user attempts to close the window with unsaved changes.
+            # Create a recovery copy before asking, so Cancel also preserves unsaved work.
             self.file_manager.autosave_on_exit()
 
             reply = QMessageBox.question(
@@ -227,7 +237,6 @@ class TilfEditor(QMainWindow):
             elif reply == QMessageBox.StandardButton.Cancel:
                 return event.ignore()
             else:
-                self.file_manager.autosave_on_exit()
                 return event.accept()
         else:
             return event.accept()

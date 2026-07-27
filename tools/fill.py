@@ -1,6 +1,8 @@
 from PySide6.QtCore import QPoint, Qt
-from PySide6.QtGui import QMouseEvent, QCursor
+from PySide6.QtGui import QColor, QCursor, QMouseEvent
+
 from tools.base_tool import BaseTool
+
 
 class Fill(BaseTool):
     def mousePressEvent(self, event: QMouseEvent, cell: QPoint) -> bool:
@@ -9,13 +11,13 @@ class Fill(BaseTool):
             self.canvas.update()
         return changed
 
-    def mouseMoveEvent(self, event: QMouseEvent, cell: QPoint):
-        pass
+    def mouseMoveEvent(self, event: QMouseEvent, cell: QPoint) -> bool:
+        return False
 
-    def mouseReleaseEvent(self, event: QMouseEvent, cell: QPoint):
-        pass
+    def mouseReleaseEvent(self, event: QMouseEvent, cell: QPoint) -> bool:
+        return False
 
-    def _flood_fill(self, start_col: int, start_row: int, new_color) -> bool:
+    def _flood_fill(self, start_col: int, start_row: int, new_color: QColor) -> bool:
         target_rgba = self.canvas.image.pixel(start_col, start_row)
         new_rgba = new_color.rgba()
         if target_rgba == new_rgba:

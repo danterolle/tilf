@@ -51,6 +51,7 @@ TITLE_SECONDARY_COLOR = "Choose Secondary Color"
 TITLE_GRID_COLOR = "Choose Grid Color"
 
 MSG_FAILED_LOAD = "Failed to load the image."
+MSG_FAILED_SAVE_FMT = "Failed to save the image to: {path}"
 MSG_DISCARD_CHANGES = "You have unsaved changes. Do you want to continue and discard them?"
 MSG_SAVE_BEFORE_QUIT = "You have unsaved changes. Do you want to save before quitting?"
 MSG_TRANSPARENCY_PROMPT = "Save with a transparent background?"
@@ -141,14 +142,26 @@ TOOLBAR_ACTIONS: List[Dict[str, Any]] = [
     # The tools will be dynamically inserted here by the Toolbar class
     {"is_tool_group": True},
     {"sep": True},
-    {"text": "Color", "icon": "assets/icons/color.png", "handler_name": "choose_primary_color", "tooltip": "Choose primary brush color"},
-    {"text": "Background", "icon": "assets/icons/background.png", "handler_name": "choose_secondary_color", "tooltip": "Choose canvas background color"},
+    {
+        "text": "Color", "icon": "assets/icons/color.png",
+        "handler_name": "choose_primary_color", "tooltip": "Choose primary brush color",
+    },
+    {
+        "text": "Background", "icon": "assets/icons/background.png",
+        "handler_name": "choose_secondary_color", "tooltip": "Choose canvas background color",
+    },
     {"text": "Clear", "icon": "assets/icons/clear.png", "handler_name": "clear_canvas", "tooltip": "Clear canvas"},
     {"sep": True},
-    {"text": "Grid", "icon": "assets/icons/grid.png", "checkable": True, "checked": True, "handler_name": "toggle_grid"},
+    {
+        "text": "Grid", "icon": "assets/icons/grid.png",
+        "checkable": True, "checked": True, "handler_name": "toggle_grid",
+    },
     {"text": "Grid color", "icon": "assets/icons/grid_color.png", "handler_name": "choose_grid_color"},
     {"sep": True},
-    {"text": "Shift", "icon": "assets/icons/shift.png", "handler_name": "shift_canvas", "tooltip": "Shift canvas up, down, left, or right by 1px."},
+    {
+        "text": "Shift", "icon": "assets/icons/shift.png",
+        "handler_name": "shift_canvas", "tooltip": "Shift canvas up, down, left, or right by 1px.",
+    },
     {"sep": True},
     {"text": "About", "icon": "assets/logo.png", "handler_name": "about", "tooltip": "About Tilf"},
 ]

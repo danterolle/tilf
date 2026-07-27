@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
+
 from PySide6.QtCore import QPoint, Qt
-from PySide6.QtGui import QMouseEvent, QColor
+from PySide6.QtGui import QColor, QMouseEvent
 
 from state import AppState
 from tools.base_tool import BaseTool
@@ -11,7 +13,9 @@ if TYPE_CHECKING:
 
 
 class Pencil(BaseTool):
-    def __init__(self, canvas: Canvas, app_state: AppState):
+    is_drag_tool = True
+
+    def __init__(self, canvas: Canvas, app_state: AppState) -> None:
         super().__init__(canvas, app_state)
         self._draw_color: QColor = self.app_state.primary_color
 
@@ -22,9 +26,9 @@ class Pencil(BaseTool):
             self._draw_color = self.app_state.primary_color
         return self.canvas.draw_pixel(cell.x(), cell.y(), self._draw_color)
 
-    def mouseMoveEvent(self, event: QMouseEvent, cell: QPoint):
-        self.canvas.draw_pixel(cell.x(), cell.y(), self._draw_color)
+    def mouseMoveEvent(self, event: QMouseEvent, cell: QPoint) -> bool:
+        return self.canvas.draw_pixel(cell.x(), cell.y(), self._draw_color)
 
-    def mouseReleaseEvent(self, event: QMouseEvent, cell: QPoint):
-        # Reset draw color for the next stroke
+    def mouseReleaseEvent(self, event: QMouseEvent, cell: QPoint) -> bool:
         self._draw_color = self.app_state.primary_color
+        return False

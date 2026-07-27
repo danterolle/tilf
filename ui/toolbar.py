@@ -1,17 +1,20 @@
-from typing import Dict, Any
+from collections.abc import Callable
+from typing import Any
+
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QAction, QIcon, QKeySequence, QActionGroup
-from PySide6.QtWidgets import QToolBar, QMainWindow
+from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence
+from PySide6.QtWidgets import QMainWindow, QToolBar
+
 from state import AppState
 from utils import config, resource_path
 
 
 class Toolbar:
-    def __init__(self, main_window: QMainWindow, app_state: AppState, handlers: Dict[str, callable]):
+    def __init__(self, main_window: QMainWindow, app_state: AppState, handlers: dict[str, Callable[..., object]]):
         self.main_window = main_window
         self.app_state = app_state
         self.handlers = handlers
-        self.tool_actions: Dict[str, QAction] = {}
+        self.tool_actions: dict[str, QAction] = {}
 
     def create_toolbar(self) -> QToolBar:
         toolbar = QToolBar(config.TOOLBAR_TITLE)
@@ -34,25 +37,23 @@ class Toolbar:
         self.app_state.tool_changed.connect(self._update_active_tool_button)
         return toolbar
 
-    def _add_tool_group(self, toolbar: QToolBar):
+    def _add_tool_group(self, toolbar: QToolBar) -> None:
         tools_group = QActionGroup(self.main_window)
         tools_group.setExclusive(True)
 
         for tool_name, data in config.TOOLS.items():
             action_data = data.copy()
             action_data["checkable"] = True
-            action_data["handler_name"] = \
-                lambda \
-                        checked, tool=tool_name: \
-                    (self.app_state.set_tool(tool)) \
-                    if checked else None
+            action_data["handler_name"] = (
+                lambda checked, tool=tool_name: self.app_state.set_tool(tool) if checked else None
+            )
 
             action = self._create_action(action_data, tooltip_prefix=data.get("text", ""))
             tools_group.addAction(action)
             toolbar.addAction(action)
             self.tool_actions[tool_name] = action
 
-    def _create_action(self, data: Dict[str, Any], tooltip_prefix: str = "") -> QAction:
+    def _create_action(self, data: dict[str, Any], tooltip_prefix: str = "") -> QAction:
         text = data.get("text", "")
         icon_path = data.get("icon", "")
         icon = QIcon(resource_path.get_resource_path(icon_path)) if icon_path else QIcon()
@@ -74,11 +75,11 @@ class Toolbar:
                 action.triggered.connect(self.handlers[handler_name])
 
         tooltip = data.get("tooltip", tooltip_prefix or text)
-        shortcut_text = f" ({data['shortcut']})" if 'shortcut' in data else ""
+        shortcut_text = f" ({data['shortcut']})" if "shortcut" in data else ""
         action.setToolTip(f"{tooltip}{shortcut_text}")
 
         return action
 
-    def _update_active_tool_button(self, tool_name: str):
+    def _update_active_tool_button(self, tool_name: str) -> None:
         if tool_name in self.tool_actions:
             self.tool_actions[tool_name].setChecked(True)

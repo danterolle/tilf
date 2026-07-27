@@ -1,14 +1,13 @@
-from typing import Tuple
-
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QDialog, QFormLayout, QSpinBox, QPushButton, QHBoxLayout, QLabel, QWidget
+    QDialog, QFormLayout, QHBoxLayout, QLabel, QPushButton, QSpinBox, QWidget,
 )
+
 from utils import config
 
 
 class NewCanvas(QDialog):
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.setWindowTitle(config.TITLE_NEW_CANVAS)
         self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowCloseButtonHint)
@@ -53,7 +52,7 @@ class NewCanvas(QDialog):
         height = self.rows_spin.value() * self.tile_size_spin.value()
         self.canvas_size_label.setText(f"{width} \u00d7 {height} px")
 
-    def get_size(self) -> Tuple[int, int, int, int, int]:
+    def get_size(self) -> tuple[int, int, int, int, int]:
         cols = self.cols_spin.value()
         rows = self.rows_spin.value()
         tile_size = self.tile_size_spin.value()

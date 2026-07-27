@@ -71,6 +71,14 @@ class CanvasDocument:
         self._undo_stack.clear()
         self._redo_stack.clear()
 
+    @property
+    def can_undo(self) -> bool:
+        return bool(self._undo_stack)
+
+    @property
+    def can_redo(self) -> bool:
+        return bool(self._redo_stack)
+
     def create_snapshot(self) -> QImage:
         return self.image.copy()
 

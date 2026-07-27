@@ -95,13 +95,13 @@ class TilfEditor(QMainWindow):
         file_menu = menu_bar.addMenu(config.MENU_FILE)
         file_menu.addAction(config.ACTION_NEW, self.file_manager.new_file, "Ctrl+N")
         file_menu.addAction(config.ACTION_OPEN, self.file_manager.open_file, "Ctrl+O")
-        file_menu.addAction(config.ACTION_SAVE, self.file_manager.save_file, "Ctrl+S")
+        file_menu.addAction(config.ACTION_SAVE, self.save_file, "Ctrl+S")
         file_menu.addSeparator()
         file_menu.addAction(config.ACTION_QUIT, QApplication.quit, "Ctrl+Q")
 
         edit_menu = menu_bar.addMenu(config.MENU_EDIT)
-        edit_menu.addAction(config.ACTION_UNDO, self.canvas.undo, "Ctrl+Z")
-        edit_menu.addAction(config.ACTION_REDO, self.canvas.redo, "Ctrl+Y")
+        self.undo_menu_action = edit_menu.addAction(config.ACTION_UNDO, self.canvas.undo, "Ctrl+Z")
+        self.redo_menu_action = edit_menu.addAction(config.ACTION_REDO, self.canvas.redo, "Ctrl+Y")
         edit_menu.addSeparator()
         edit_menu.addAction(config.ACTION_CLEAR_CANVAS, self.clear_canvas)
 
@@ -116,7 +116,7 @@ class TilfEditor(QMainWindow):
         handlers: dict[str, Callable[..., object]] = {
             "new_file": self.file_manager.new_file,
             "open_file": self.file_manager.open_file,
-            "save_file": self.file_manager.save_file,
+            "save_file": self.save_file,
             "undo": self.canvas.undo,
             "redo": self.canvas.redo,
             "choose_primary_color": self.choose_primary_color,
@@ -127,8 +127,10 @@ class TilfEditor(QMainWindow):
             "shift_canvas": self.shift_canvas,
             "about": self.about,
         }
-        builder = Toolbar(self, self.app_state, handlers)
-        self.addToolBar(builder.create_toolbar())
+        self.toolbar_builder = Toolbar(self, self.app_state, handlers)
+        self.addToolBar(self.toolbar_builder.create_toolbar())
+        self.undo_toolbar_action = self.toolbar_builder.action_for_handler("undo")
+        self.redo_toolbar_action = self.toolbar_builder.action_for_handler("redo")
 
     def _setup_preview_dock(self) -> None:
         self.primary_color_button = QPushButton()
@@ -199,12 +201,14 @@ class TilfEditor(QMainWindow):
 
         self.canvas.pixel_hovered.connect(self._update_status_bar)
         self.canvas.zoom_changed.connect(self._update_zoom_label)
+        self.canvas.history_changed.connect(self._update_history_actions)
         self.canvas.zoom_changed.connect(
             lambda z: self.status_bar.showMessage(
                 f"Zoom: {z}x",
                 1500
             )
         )
+        self._update_history_actions(self.canvas.document.can_undo, self.canvas.document.can_redo)
 
     def choose_primary_color(self) -> None:
         color = QColorDialog.getColor(self.app_state.primary_color, self, config.TITLE_PRIMARY_COLOR)
@@ -233,6 +237,12 @@ class TilfEditor(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             return self.canvas.clear_canvas()
         return None
+
+    def save_file(self) -> bool:
+        saved = self.file_manager.save_file()
+        if saved:
+            self.status_bar.showMessage(config.MSG_FILE_SAVED, 2000)
+        return saved
 
     def toggle_grid(self, checked: bool) -> None:
         self.canvas.is_grid_visible = checked
@@ -283,6 +293,16 @@ class TilfEditor(QMainWindow):
             "min-height: 28px;"
             "}"
         )
+
+    def _update_history_actions(self, can_undo: bool, can_redo: bool) -> None:
+        if self.undo_menu_action is not None:
+            self.undo_menu_action.setEnabled(can_undo)
+        if self.redo_menu_action is not None:
+            self.redo_menu_action.setEnabled(can_redo)
+        if self.undo_toolbar_action is not None:
+            self.undo_toolbar_action.setEnabled(can_undo)
+        if self.redo_toolbar_action is not None:
+            self.redo_toolbar_action.setEnabled(can_redo)
 
     def _refresh_preview(self) -> None:
         self._preview_dirty = False

@@ -15,6 +15,7 @@ class Toolbar:
         self.app_state = app_state
         self.handlers = handlers
         self.tool_actions: dict[str, QAction] = {}
+        self.actions_by_handler: dict[str, QAction] = {}
 
     def create_toolbar(self) -> QToolBar:
         toolbar = QToolBar(config.TOOLBAR_TITLE)
@@ -82,6 +83,7 @@ class Toolbar:
                 action.triggered.connect(handler_name)
             elif handler_name in self.handlers:
                 action.triggered.connect(self.handlers[handler_name])
+                self.actions_by_handler[handler_name] = action
 
         tooltip = data.get("tooltip", tooltip_prefix or text)
         shortcut_text = f" ({data['shortcut']})" if "shortcut" in data else ""
@@ -92,3 +94,6 @@ class Toolbar:
     def _update_active_tool_button(self, tool_name: str) -> None:
         if tool_name in self.tool_actions:
             self.tool_actions[tool_name].setChecked(True)
+
+    def action_for_handler(self, handler_name: str) -> QAction | None:
+        return self.actions_by_handler.get(handler_name)

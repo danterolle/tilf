@@ -77,6 +77,7 @@ ACTION_UNDO = "Undo"
 
 MSG_FAILED_LOAD = "Failed to load the image."
 MSG_FAILED_SAVE_FMT = "Failed to save the image to: {path}"
+MSG_FILE_SAVED = "Image saved."
 MSG_DISCARD_CHANGES = "You have unsaved changes. Do you want to continue and discard them?"
 MSG_SAVE_BEFORE_QUIT = "You have unsaved changes. Do you want to save before quitting?"
 MSG_TRANSPARENCY_PROMPT = "Save with a transparent background?"

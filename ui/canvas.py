@@ -33,6 +33,7 @@ if TYPE_CHECKING:
 class Canvas(QWidget):
     pixel_hovered = Signal(int, int, QColor)
     zoom_changed = Signal(int)
+    history_changed = Signal(bool, bool)
 
     def __init__(self, app_state: AppState) -> None:
         super().__init__()
@@ -62,6 +63,7 @@ class Canvas(QWidget):
         self.setMouseTracking(True)
         self._connect_state()
         self._update_size()
+        self._emit_history_changed()
 
     def _create_checkerboard_pixmap(self, size: int) -> QPixmap:
         pixmap = QPixmap(size * 2, size * 2)
@@ -129,6 +131,7 @@ class Canvas(QWidget):
         if clear_history:
             self._pending_undo_snapshot = None
         self._update_size()
+        self._emit_history_changed()
         self.app_state.notify_image_changed()
 
     def load_image(self, image: QImage) -> None:
@@ -137,26 +140,31 @@ class Canvas(QWidget):
         self.document.load_image(image, transparent)
         self.app_state.set_secondary_color(transparent)
         self._update_size()
+        self._emit_history_changed()
         self.app_state.notify_image_changed()
 
     def clear_canvas(self) -> None:
         if self.document.clear(self.app_state.secondary_color):
             self.update()
+            self._emit_history_changed()
             self.app_state.notify_image_changed()
 
     def undo(self) -> None:
         if self.document.undo():
             self._update_size()
+            self._emit_history_changed()
             self.app_state.notify_image_changed()
 
     def redo(self) -> None:
         if self.document.redo():
             self._update_size()
+            self._emit_history_changed()
             self.app_state.notify_image_changed()
 
     def shift_image(self, direction: str) -> None:
         if self.document.shift(direction, self.app_state.secondary_color, config.SHIFT_OFFSETS):
             self.update()
+            self._emit_history_changed()
             self.app_state.notify_image_changed()
 
     def draw_pixel(self, col: int, row: int, color: QColor) -> bool:
@@ -210,10 +218,12 @@ class Canvas(QWidget):
     def _on_secondary_color_change(self, new_bg_color: QColor) -> None:
         if self.document.replace_background(new_bg_color):
             self.update()
+            self._emit_history_changed()
             self.app_state.notify_image_changed()
 
     def _push_undo_snapshot(self, snapshot: QImage) -> None:
         self.document.commit_snapshot(snapshot)
+        self._emit_history_changed()
 
     def _commit_pending_undo(self) -> None:
         if self._pending_undo_snapshot is None:
@@ -226,6 +236,9 @@ class Canvas(QWidget):
         height = self.rows * self.cell_size + 1
         self.setFixedSize(width, height)
         self.update()
+
+    def _emit_history_changed(self) -> None:
+        self.history_changed.emit(self.document.can_undo, self.document.can_redo)
 
     def set_cell_size(self, size: int) -> None:
         size = max(1, min(50, size))

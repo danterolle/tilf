@@ -6,6 +6,8 @@ from PySide6.QtGui import QCloseEvent, QColor, QDragEnterEvent, QDropEvent, QPix
 from PySide6.QtWidgets import (
     QColorDialog,
     QDockWidget,
+    QFormLayout,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QMainWindow,
@@ -104,6 +106,13 @@ class TilfEditor(QMainWindow):
         self.addToolBar(builder.create_toolbar())
 
     def _setup_preview_dock(self) -> None:
+        self.primary_color_button = QPushButton()
+        self.primary_color_button.clicked.connect(self.choose_primary_color)
+        self.secondary_color_button = QPushButton()
+        self.secondary_color_button.clicked.connect(self.choose_secondary_color)
+        self.canvas_info_label = QLabel()
+        self.zoom_value_label = QLabel()
+
         self.preview_label = QLabel()
         self.preview_label.setMinimumSize(150, 150)
         self.preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -112,22 +121,59 @@ class TilfEditor(QMainWindow):
         container = QWidget()
         layout = QVBoxLayout(container)
         layout.setContentsMargins(8, 8, 8, 8)
-        label = QLabel(config.LABEL_PREVIEW)
-        label.setStyleSheet("font-weight:bold; color:#ddd;")
-        layout.addWidget(label)
-        layout.addWidget(self.preview_label, 1)
+        layout.setSpacing(10)
 
-        dock = QDockWidget(config.LABEL_PREVIEW, self)
+        layout.addWidget(self._create_preview_group())
+        layout.addWidget(self._create_color_group())
+        layout.addWidget(self._create_canvas_group())
+        layout.addStretch()
+
+        dock = QDockWidget(config.LABEL_INSPECTOR, self)
         dock.setWidget(container)
         dock.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
+        self._update_color_swatch(self.primary_color_button, self.app_state.primary_color)
+        self._update_color_swatch(self.secondary_color_button, self.app_state.secondary_color)
+        self._update_canvas_info()
+        self._update_zoom_label(self.canvas.cell_size)
+
+    def _create_preview_group(self) -> QGroupBox:
+        group = QGroupBox(config.LABEL_PREVIEW)
+        layout = QVBoxLayout(group)
+        layout.addWidget(self.preview_label)
+        return group
+
+    def _create_color_group(self) -> QGroupBox:
+        group = QGroupBox(config.LABEL_COLORS)
+        layout = QFormLayout(group)
+        layout.addRow(config.LABEL_PRIMARY_COLOR, self.primary_color_button)
+        layout.addRow(config.LABEL_BACKGROUND_COLOR, self.secondary_color_button)
+        return group
+
+    def _create_canvas_group(self) -> QGroupBox:
+        group = QGroupBox(config.LABEL_CANVAS)
+        layout = QFormLayout(group)
+        grid_color_button = QPushButton(config.BTN_GRID_COLOR)
+        grid_color_button.clicked.connect(self.choose_grid_color)
+        layout.addRow(config.LABEL_CANVAS_SIZE, self.canvas_info_label)
+        layout.addRow(config.LABEL_ZOOM, self.zoom_value_label)
+        layout.addRow(config.LABEL_GRID, grid_color_button)
+        return group
 
     def _connect_signals(self) -> None:
         self.app_state.dirty_changed.connect(self._update_window_title)
         self.app_state.file_path_changed.connect(self._update_window_title)
         self.app_state.image_changed.connect(self._schedule_preview_refresh)
+        self.app_state.image_changed.connect(self._update_canvas_info)
+        self.app_state.primary_color_changed.connect(
+            lambda color: self._update_color_swatch(self.primary_color_button, color)
+        )
+        self.app_state.secondary_color_changed.connect(
+            lambda color: self._update_color_swatch(self.secondary_color_button, color)
+        )
 
         self.canvas.pixel_hovered.connect(self._update_status_bar)
+        self.canvas.zoom_changed.connect(self._update_zoom_label)
         self.canvas.zoom_changed.connect(
             lambda z: self.status_bar.showMessage(
                 f"Zoom: {z}x",
@@ -193,6 +239,25 @@ class TilfEditor(QMainWindow):
         if not self._preview_dirty:
             self._preview_dirty = True
             QTimer.singleShot(50, self._refresh_preview)
+
+    def _update_canvas_info(self) -> None:
+        self.canvas_info_label.setText(f"{self.canvas.columns} x {self.canvas.rows}px")
+
+    def _update_zoom_label(self, zoom: int) -> None:
+        self.zoom_value_label.setText(f"{zoom}x")
+
+    def _update_color_swatch(self, button: QPushButton, color: QColor) -> None:
+        alpha = color.alpha() / 255
+        button.setText(color.name(QColor.NameFormat.HexArgb))
+        button.setToolTip(color.name(QColor.NameFormat.HexArgb))
+        button.setStyleSheet(
+            "QPushButton {"
+            f"background-color: rgba({color.red()}, {color.green()}, {color.blue()}, {alpha:.3f});"
+            "border: 1px solid palette(mid);"
+            "border-radius: 4px;"
+            "min-height: 28px;"
+            "}"
+        )
 
     def _refresh_preview(self) -> None:
         self._preview_dirty = False

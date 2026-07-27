@@ -4,6 +4,7 @@ from collections.abc import Callable
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QCloseEvent, QColor, QDragEnterEvent, QDropEvent, QPixmap
 from PySide6.QtWidgets import (
+    QApplication,
     QColorDialog,
     QDockWidget,
     QFormLayout,
@@ -44,6 +45,7 @@ class TilfEditor(QMainWindow):
 
         self._setup_central_widget()
         self._setup_status_bar()
+        self._setup_menu_bar()
         self._setup_toolbar()
         self._setup_preview_dock()
         self._connect_signals()
@@ -86,6 +88,29 @@ class TilfEditor(QMainWindow):
         self.zoom_slider.valueChanged.connect(self.canvas.set_cell_size)
         self.canvas.zoom_changed.connect(self.zoom_slider.setValue)
         reset_button.clicked.connect(lambda: self.canvas.set_cell_size(config.DEFAULT_ZOOM))
+
+    def _setup_menu_bar(self) -> None:
+        menu_bar = self.menuBar()
+
+        file_menu = menu_bar.addMenu(config.MENU_FILE)
+        file_menu.addAction(config.ACTION_NEW, self.file_manager.new_file, "Ctrl+N")
+        file_menu.addAction(config.ACTION_OPEN, self.file_manager.open_file, "Ctrl+O")
+        file_menu.addAction(config.ACTION_SAVE, self.file_manager.save_file, "Ctrl+S")
+        file_menu.addSeparator()
+        file_menu.addAction(config.ACTION_QUIT, QApplication.quit, "Ctrl+Q")
+
+        edit_menu = menu_bar.addMenu(config.MENU_EDIT)
+        edit_menu.addAction(config.ACTION_UNDO, self.canvas.undo, "Ctrl+Z")
+        edit_menu.addAction(config.ACTION_REDO, self.canvas.redo, "Ctrl+Y")
+        edit_menu.addSeparator()
+        edit_menu.addAction(config.ACTION_CLEAR_CANVAS, self.clear_canvas)
+
+        view_menu = menu_bar.addMenu(config.MENU_VIEW)
+        view_menu.addAction(config.ACTION_RESET_ZOOM, lambda: self.canvas.set_cell_size(config.DEFAULT_ZOOM))
+        view_menu.addAction(config.ACTION_GRID_COLOR, self.choose_grid_color)
+
+        help_menu = menu_bar.addMenu(config.MENU_HELP)
+        help_menu.addAction(config.ACTION_ABOUT, self.about)
 
     def _setup_toolbar(self) -> None:
         handlers: dict[str, Callable[..., object]] = {

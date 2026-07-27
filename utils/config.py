@@ -14,8 +14,17 @@ AUTOSAVE_DIR = "tilf_autosaves"
 
 MAX_TILE_COLS = 64
 MAX_TILE_ROWS = 64
+MIN_CANVAS_SIZE = 1
+MAX_CANVAS_SIZE = 4096
 MIN_TILE_SIZE = 8
 MAX_TILE_SIZE = 128
+CANVAS_PRESETS = {
+    "Default tile grid": (DEFAULT_WIDTH, DEFAULT_HEIGHT),
+    "16 x 16 icon": (16, 16),
+    "32 x 32 icon": (32, 32),
+    "64 x 64 icon": (64, 64),
+    "128 x 128 sprite": (128, 128),
+}
 
 DEFAULT_PRIMARY_COLOR = QColor("black")
 DEFAULT_SECONDARY_COLOR = QColor("white")
@@ -60,6 +69,11 @@ MSG_SHIFT_CANVAS = "Shift canvas 1px to the:"
 
 LABEL_WIDTH = "Width (px):"
 LABEL_HEIGHT = "Height (px):"
+LABEL_PRESET = "Preset:"
+LABEL_RESULTING_CANVAS = "Result:"
+LABEL_TILE_COLUMNS = "Tile columns:"
+LABEL_TILE_ROWS = "Tile rows:"
+LABEL_TILE_SIZE = "Tile size:"
 BTN_OK = "OK"
 BTN_CANCEL = "Cancel"
 BTN_RESET_ZOOM = "Reset Zoom"

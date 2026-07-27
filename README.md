@@ -44,6 +44,7 @@ Publish it as an Open Source project might be interesting for others as well.
 - [Features](#features)
 - [Requirements](#requirements)
 - [Build on MacOS and GNU/Linux](#build-on-macos-and-gnulinux)
+- [Release automation](#release-automation)
 - [About Windows](#about-windows)
   - [Run from source](#run-from-source)
   - [Build executable .exe](#build-executable-exe)
@@ -146,6 +147,21 @@ make
 ```
 
 Enjoy!
+
+## Release automation
+
+GitHub Actions builds release assets for Linux, MacOS and Windows when a version tag is pushed:
+
+```bash
+git tag -a vX.Y -m "vX.Y"
+git push origin main vX.Y
+```
+
+The release workflow creates:
+
+- `tilf_X.Y-Linux.tar.xz`
+- `tilf_X.Y-MacOS.zip`
+- `tilf_X.Y-Windows.exe`
 
 ## About Windows
 

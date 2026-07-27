@@ -1,0 +1,185 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to build, for example v0.3"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  check:
+    name: Lint and typecheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Run Ruff
+        run: python -m ruff check .
+
+      - name: Run mypy
+        run: python -m mypy .
+
+  build:
+    name: Build ${{ matrix.name }}
+    needs: check
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            os: ubuntu-22.04
+            icon: assets/icon.ico
+          - name: MacOS
+            os: macos-13
+            icon: assets/icon.icns
+          - name: Windows
+            os: windows-latest
+            icon: assets/icon.ico
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install Linux runtime libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            libegl1 \
+            libgl1 \
+            libxkbcommon-x11-0 \
+            libxcb-cursor0 \
+            libxcb-icccm4 \
+            libxcb-image0 \
+            libxcb-keysyms1 \
+            libxcb-randr0 \
+            libxcb-render-util0 \
+            libxcb-shape0 \
+            libxcb-xinerama0
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Build Unix application
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          python -m PyInstaller \
+            --name tilf \
+            --onefile \
+            --windowed \
+            --icon="${{ matrix.icon }}" \
+            --add-data "assets:assets" \
+            --add-data "style.qss:." \
+            main.py
+
+      - name: Build Windows application
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          python -m PyInstaller `
+            --name tilf `
+            --onefile `
+            --windowed `
+            --icon="${{ matrix.icon }}" `
+            --add-data "assets;assets" `
+            --add-data "style.qss;." `
+            main.py
+
+      - name: Package Linux build
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          version="${RELEASE_TAG#v}"
+          mkdir -p release
+          tar -C dist -cJf "release/tilf_${version}-Linux.tar.xz" tilf
+
+      - name: Package macOS build
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          version="${RELEASE_TAG#v}"
+          mkdir -p release
+          if [ -d "dist/tilf.app" ]; then
+            ditto -c -k --sequesterRsrc --keepParent "dist/tilf.app" "release/tilf_${version}-MacOS.zip"
+          else
+            ditto -c -k --keepParent "dist/tilf" "release/tilf_${version}-MacOS.zip"
+          fi
+
+      - name: Package Windows build
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $version = $env:RELEASE_TAG.TrimStart("v")
+          New-Item -ItemType Directory -Force -Path release | Out-Null
+          Copy-Item dist/tilf.exe "release/tilf_$version-Windows.exe"
+
+      - name: Upload release asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: tilf-${{ matrix.name }}
+          path: release/*
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download release assets
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_TAG }}
+          generate_release_notes: true
+          make_latest: true
+          files: release-assets/*

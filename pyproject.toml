@@ -25,7 +25,7 @@ dev = [
 py-modules = ["file_manager", "main", "state"]
 
 [tool.setuptools.packages.find]
-include = ["tools*", "ui*", "utils*"]
+include = ["core*", "tools*", "ui*", "utils*"]
 
 [tool.ruff]
 target-version = "py311"

@@ -1,5 +1,5 @@
 from PySide6.QtCore import QPoint
-from PySide6.QtGui import QColor, QMouseEvent
+from PySide6.QtGui import QMouseEvent
 
 from tools.base_tool import BaseTool
 from utils import config
@@ -7,7 +7,7 @@ from utils import config
 
 class Eyedropper(BaseTool):
     def mousePressEvent(self, event: QMouseEvent, cell: QPoint) -> bool:
-        color = QColor(self.canvas.image.pixel(cell))
+        color = self.canvas.pixel_color(cell.x(), cell.y())
         self.app_state.set_primary_color(color)
         self.app_state.set_tool(config.ToolType.PENCIL)
         return False

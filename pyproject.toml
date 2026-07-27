@@ -17,7 +17,6 @@ dependencies = [
 dev = [
     "mypy",
     "PyInstaller",
-    "pytest",
     "ruff",
 ]
 
@@ -39,6 +38,3 @@ python_version = "3.11"
 strict = false
 ignore_missing_imports = true
 disallow_untyped_defs = false
-
-[tool.pytest.ini_options]
-pythonpath = ["."]

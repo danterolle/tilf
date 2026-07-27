@@ -2,9 +2,10 @@ import os
 import sys
 import time
 
-from PySide6.QtGui import QColor, QImage, QPainter
+from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QWidget
 
+from core.image_io import export_image, infer_image_format
 from state import AppState
 from ui.canvas import Canvas
 from ui.dialogs.new_canvas import NewCanvas
@@ -54,14 +55,7 @@ class FileManager:
         if not path:
             return self.save_file_as()
 
-        file_ext = os.path.splitext(path)[1].upper().replace(".", "")
-        file_format = (
-            config.IMAGE_FORMAT_JPEG
-            if file_ext in config.JPEG_EXTENSIONS
-            else config.IMAGE_FORMAT_BMP if file_ext == config.IMAGE_FORMAT_BMP
-            else config.IMAGE_FORMAT_PNG
-        )
-
+        file_format = infer_image_format(path)
         is_transparent = (file_format == config.IMAGE_FORMAT_PNG)
 
         if not self.export_image(path, file_format, is_transparent):
@@ -106,17 +100,7 @@ class FileManager:
             get_logger().error(config.MSG_AUTOSAVE_ERROR_FMT.format(error=error))
 
     def export_image(self, filename: str, file_format: str | None, is_transparent: bool) -> bool:
-        img_to_save = self.canvas.image.copy()
-        qt_file_format = file_format.encode("ascii") if file_format else None
-        if not is_transparent:
-            background_img = QImage(img_to_save.size(), QImage.Format.Format_ARGB32)
-            background_img.fill(QColor(config.COLOR_WHITE))
-            painter = QPainter(background_img)
-            painter.drawImage(0, 0, img_to_save)
-            painter.end()
-            return background_img.save(filename, qt_file_format)
-
-        return img_to_save.save(filename, qt_file_format)
+        return export_image(self.canvas.image, filename, file_format, is_transparent)
 
     def _confirm_discard_if_needed(self) -> bool:
         if not self.app_state.is_dirty:
@@ -140,14 +124,7 @@ class FileManager:
         if not path:
             return None, None, False
 
-        file_ext = os.path.splitext(path)[1].upper().replace(".", "")
-        if file_ext in config.JPEG_EXTENSIONS:
-            file_format = config.IMAGE_FORMAT_JPEG
-        elif file_ext == config.IMAGE_FORMAT_BMP:
-            file_format = config.IMAGE_FORMAT_BMP
-        else:
-            file_format = config.IMAGE_FORMAT_PNG
-
+        file_format = infer_image_format(path)
         is_transparent = False
         if file_format == config.IMAGE_FORMAT_PNG:
             reply = QMessageBox.question(

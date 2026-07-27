@@ -15,7 +15,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import QWidget
 
-from core.document import CanvasDocument
+from core.document import CanvasDocument, ShapeKind
 from state import AppState
 from tools.ellipse import Ellipse
 from tools.eraser import Eraser
@@ -168,6 +168,45 @@ class Canvas(QWidget):
     def flood_fill(self, col: int, row: int, color: QColor) -> bool:
         return self.document.flood_fill(col, row, color)
 
+    def pixel_color(self, col: int, row: int) -> QColor:
+        return self.document.pixel_color(col, row)
+
+    def draw_shape(
+        self,
+        shape_kind: ShapeKind,
+        start_cell: QPoint,
+        end_cell: QPoint,
+        force_square: bool,
+        color: QColor,
+    ) -> bool:
+        return self.document.draw_shape(
+            shape_kind,
+            start_cell.x(),
+            start_cell.y(),
+            end_cell.x(),
+            end_cell.y(),
+            force_square,
+            color,
+        )
+
+    def create_shape_preview(
+        self,
+        shape_kind: ShapeKind,
+        start_cell: QPoint,
+        end_cell: QPoint,
+        force_square: bool,
+        color: QColor,
+    ) -> QImage:
+        return self.document.create_shape_preview(
+            shape_kind,
+            start_cell.x(),
+            start_cell.y(),
+            end_cell.x(),
+            end_cell.y(),
+            force_square,
+            color,
+        )
+
     def _on_secondary_color_change(self, new_bg_color: QColor) -> None:
         if self.document.replace_background(new_bg_color):
             self.update()
@@ -240,7 +279,7 @@ class Canvas(QWidget):
             return
 
         if event.button() == Qt.MouseButton.RightButton:
-            color = QColor(self.image.pixel(cell))
+            color = self.pixel_color(cell.x(), cell.y())
             self.app_state.set_primary_color(color)
             self.app_state.set_tool(config.ToolType.PENCIL)
             return
@@ -267,7 +306,7 @@ class Canvas(QWidget):
         cell = QPoint(pos.x() // self.cell_size, pos.y() // self.cell_size)
 
         if 0 <= cell.x() < self.columns and 0 <= cell.y() < self.rows:
-            self.pixel_hovered.emit(cell.x(), cell.y(), QColor(self.image.pixel(cell)))
+            self.pixel_hovered.emit(cell.x(), cell.y(), self.pixel_color(cell.x(), cell.y()))
             if self._is_drawing:
                 changed = self._current_tool.mouseMoveEvent(event, cell)
                 if changed:

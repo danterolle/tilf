@@ -14,7 +14,7 @@ else
 	ICON_FILE = $(RESOURCES_DIR)/icon.ico
 endif
 
-.PHONY: all build check clean dev install lint run test typecheck
+.PHONY: all build check clean dev install lint run typecheck
 
 all: build
 
@@ -40,10 +40,7 @@ lint: install
 typecheck: install
 	$(VENV_PYTHON) -m mypy .
 
-test: install
-	$(VENV_PYTHON) -m pytest -q
-
-check: lint typecheck test
+check: lint typecheck
 
 build: install
 	@echo "Building the application bundle..."

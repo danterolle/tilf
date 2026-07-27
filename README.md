@@ -101,7 +101,7 @@ Publish it as an Open Source project might be interesting for others as well.
 - OS: Windows, MacOS or GNULinux
 - Dependencies:
   - Runtime: PySide6
-  - Development/build: Ruff, pytest, mypy, PyInstaller
+  - Development/build: Ruff, mypy, PyInstaller
 
 I did not use uv or poetry for this project; 
 I don't think it is necessary to introduce a tool of that kind for a project that is, all things considered, simple.

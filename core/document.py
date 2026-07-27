@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Literal
 
-from PySide6.QtCore import QPoint
 from PySide6.QtGui import QColor, QImage, QPainter
+
+ShapeKind = Literal["rect", "ellipse"]
+ShapeBounds = tuple[int, int, int, int]
 
 
 class CanvasDocument:
@@ -90,6 +93,11 @@ class CanvasDocument:
         self.image.setPixelColor(col, row, color)
         return True
 
+    def pixel_color(self, col: int, row: int) -> QColor:
+        if not self.contains(col, row):
+            return QColor("transparent")
+        return self.image.pixelColor(col, row)
+
     def flood_fill(self, start_col: int, start_row: int, new_color: QColor) -> bool:
         if not self.contains(start_col, start_row):
             return False
@@ -119,12 +127,78 @@ class CanvasDocument:
         shifted_image.fill(background_color)
 
         painter = QPainter(shifted_image)
-        painter.drawImage(QPoint(dx, dy), self.image)
+        painter.drawImage(dx, dy, self.image)
         painter.end()
 
         self.image = shifted_image
         self.background_color = background_color
         return True
+
+    def draw_shape(
+        self,
+        shape_kind: ShapeKind,
+        start_col: int,
+        start_row: int,
+        end_col: int,
+        end_row: int,
+        force_square: bool,
+        color: QColor,
+    ) -> bool:
+        bounds = self.shape_bounds(start_col, start_row, end_col, end_row, force_square)
+        if bounds is None:
+            return False
+
+        self._draw_shape(self.image, shape_kind, bounds, color)
+        return True
+
+    def create_shape_preview(
+        self,
+        shape_kind: ShapeKind,
+        start_col: int,
+        start_row: int,
+        end_col: int,
+        end_row: int,
+        force_square: bool,
+        color: QColor,
+    ) -> QImage:
+        preview_image = QImage(self.image.size(), QImage.Format.Format_ARGB32)
+        preview_image.fill(QColor("transparent"))
+
+        bounds = self.shape_bounds(start_col, start_row, end_col, end_row, force_square)
+        if bounds is not None:
+            self._draw_shape(preview_image, shape_kind, bounds, color)
+
+        return preview_image
+
+    def shape_bounds(
+        self,
+        start_col: int,
+        start_row: int,
+        end_col: int,
+        end_row: int,
+        force_square: bool,
+    ) -> ShapeBounds | None:
+        if not self.contains(start_col, start_row):
+            return None
+
+        if force_square:
+            dx = abs(end_col - start_col)
+            dy = abs(end_row - start_row)
+            size = max(dx, dy)
+            end_col = start_col + size if end_col >= start_col else start_col - size
+            end_row = start_row + size if end_row >= start_row else start_row - size
+
+        left = max(0, min(start_col, end_col))
+        top = max(0, min(start_row, end_row))
+        right = min(self.columns - 1, max(start_col, end_col))
+        bottom = min(self.rows - 1, max(start_row, end_row))
+
+        width = right - left + 1
+        height = bottom - top + 1
+        if width <= 0 or height <= 0:
+            return None
+
+        return left, top, width, height
 
     def replace_background(self, new_background_color: QColor) -> bool:
         if not new_background_color.isValid() or new_background_color == self.background_color:
@@ -166,3 +240,13 @@ class CanvasDocument:
         self.columns = self.image.width()
         self.rows = self.image.height()
         return True
+
+    def _draw_shape(self, image: QImage, shape_kind: ShapeKind, bounds: ShapeBounds, color: QColor) -> None:
+        left, top, width, height = bounds
+        painter = QPainter(image)
+        painter.setPen(color)
+        if shape_kind == "rect":
+            painter.drawRect(left, top, width, height)
+        else:
+            painter.drawEllipse(left, top, width, height)
+        painter.end()

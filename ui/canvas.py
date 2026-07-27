@@ -7,6 +7,7 @@ from PySide6.QtGui import (
     QColor,
     QImage,
     QMouseEvent,
+    QNativeGestureEvent,
     QPainter,
     QPaintEvent,
     QPen,
@@ -50,6 +51,7 @@ class Canvas(QWidget):
         self.cell_size: int = config.DEFAULT_ZOOM
         self.grid_color: QColor = config.DEFAULT_GRID_COLOR
         self.is_grid_visible: bool = True
+        self._gesture_zoom_remainder = 0.0
         self._pending_undo_snapshot: QImage | None = None
 
         self._is_drawing: bool = False
@@ -247,6 +249,29 @@ class Canvas(QWidget):
             self._update_size()
             self.zoom_changed.emit(size)
 
+    def nativeGestureEvent(self, event: QNativeGestureEvent) -> None:
+        gesture_type = event.gestureType()
+        if gesture_type == Qt.NativeGestureType.BeginNativeGesture:
+            self._gesture_zoom_remainder = 0.0
+            event.accept()
+            return
+
+        if gesture_type == Qt.NativeGestureType.ZoomNativeGesture:
+            self._gesture_zoom_remainder += event.value() * config.MACOS_PINCH_ZOOM_SENSITIVITY
+            zoom_steps = int(self._gesture_zoom_remainder)
+            if zoom_steps != 0:
+                self.set_cell_size(self.cell_size + zoom_steps)
+                self._gesture_zoom_remainder -= zoom_steps
+            event.accept()
+            return
+
+        if gesture_type == Qt.NativeGestureType.SmartZoomNativeGesture:
+            self.set_cell_size(config.DEFAULT_ZOOM)
+            event.accept()
+            return
+
+        event.ignore()
+
     def paintEvent(self, event: QPaintEvent) -> None:
         painter = QPainter(self)
         painter.drawTiledPixmap(self.rect(), self._checkerboard_pixmap)
@@ -341,6 +366,14 @@ class Canvas(QWidget):
         self._pending_undo_snapshot = None
 
     def wheelEvent(self, event: QWheelEvent) -> None:
+        should_zoom = bool(
+            event.modifiers() & (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.MetaModifier)
+            or event.pixelDelta().isNull()
+        )
+        if not should_zoom:
+            event.ignore()
+            return
+
         delta = event.angleDelta().y() // 120
         if delta != 0:
             self.set_cell_size(self.cell_size + delta)

@@ -77,7 +77,7 @@ Publish it as an Open Source project might be interesting for others as well.
   - Ellipse (stroke)
 - Canvas:
   - New image with custom dimensions
-  - Zoom 1–50x (mouse wheel or slider)
+  - Zoom 1–50x (mouse wheel, macOS pinch gesture, Ctrl/Cmd + scroll, or slider)
   - Editable background color (alpha supported)
   - Optional grid with customizable color
   - Clear canvas
@@ -227,6 +227,9 @@ pyinstaller --name tilf --onefile --windowed --icon assets/icon.icns --add-data 
 - Edit:
   - Undo: Ctrl+Z
   - Redo: Ctrl+Y
+- View:
+  - Zoom: mouse wheel, macOS pinch gesture, or Ctrl/Cmd + scroll
+  - Pan: trackpad/touchpad scroll
 - Tools:
   - Pencil: B
   - Eraser: E

@@ -141,11 +141,12 @@ class TilfEditor(QMainWindow):
         self.zoom_value_label = QLabel()
 
         self.preview_label = QLabel()
+        self.preview_label.setObjectName("previewLabel")
         self.preview_label.setMinimumSize(150, 150)
         self.preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.preview_label.setStyleSheet("background:#1e1e1e; border:1px solid #444; border-radius:8px;")
 
         container = QWidget()
+        container.setObjectName("inspectorPanel")
         layout = QVBoxLayout(container)
         layout.setContentsMargins(8, 8, 8, 8)
         layout.setSpacing(10)
@@ -282,15 +283,17 @@ class TilfEditor(QMainWindow):
         self.zoom_value_label.setText(f"{zoom}x")
 
     def _update_color_swatch(self, button: QPushButton, color: QColor) -> None:
-        alpha = color.alpha() / 255
+        text_color = "#f8fafc" if color.lightness() < 150 or color.alpha() < 128 else "#111827"
         button.setText(color.name(QColor.NameFormat.HexArgb))
         button.setToolTip(color.name(QColor.NameFormat.HexArgb))
         button.setStyleSheet(
             "QPushButton {"
-            f"background-color: rgba({color.red()}, {color.green()}, {color.blue()}, {alpha:.3f});"
-            "border: 1px solid palette(mid);"
-            "border-radius: 4px;"
-            "min-height: 28px;"
+            f"background-color: rgba({color.red()}, {color.green()}, {color.blue()}, {color.alpha()});"
+            "border: 1px solid #475569;"
+            "border-radius: 8px;"
+            f"color: {text_color};"
+            "font-weight: bold;"
+            "min-height: 32px;"
             "}"
         )
 

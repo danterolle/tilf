@@ -62,7 +62,7 @@ jobs:
             os: ubuntu-22.04
             icon: assets/icon.ico
           - name: MacOS
-            os: macos-13
+            os: macos-latest
             icon: assets/icon.icns
           - name: Windows
             os: windows-latest

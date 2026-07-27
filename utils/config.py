@@ -1,6 +1,6 @@
-from typing import List, Dict, Any
-from PySide6.QtGui import QColor
+from typing import Any, Dict, List
 
+from PySide6.QtGui import QColor
 
 APP_NAME = "Tilf - Pixel Art Editor"
 DEFAULT_TILE_COLS = 8

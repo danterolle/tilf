@@ -1,10 +1,20 @@
 import os
+from collections.abc import Callable
 
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QColor, QCloseEvent, QDragEnterEvent, QDropEvent, QPixmap
+from PySide6.QtGui import QCloseEvent, QColor, QDragEnterEvent, QDropEvent, QPixmap
 from PySide6.QtWidgets import (
-    QColorDialog, QDockWidget, QHBoxLayout, QLabel, QMainWindow,
-    QMessageBox, QPushButton, QScrollArea, QSlider, QStatusBar, QVBoxLayout,
+    QColorDialog,
+    QDockWidget,
+    QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QScrollArea,
+    QSlider,
+    QStatusBar,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -76,7 +86,7 @@ class TilfEditor(QMainWindow):
         reset_button.clicked.connect(lambda: self.canvas.set_cell_size(config.DEFAULT_ZOOM))
 
     def _setup_toolbar(self) -> None:
-        handlers = {
+        handlers: dict[str, Callable[..., object]] = {
             "new_file": self.file_manager.new_file,
             "open_file": self.file_manager.open_file,
             "save_file": self.file_manager.save_file,

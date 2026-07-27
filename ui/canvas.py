@@ -4,21 +4,27 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QPoint, QRect, Qt, Signal
 from PySide6.QtGui import (
-    QBitmap, QColor, QImage, QMouseEvent, QPainter, QPaintEvent, QPen,
-    QPixmap, QWheelEvent,
+    QBitmap,
+    QColor,
+    QImage,
+    QMouseEvent,
+    QPainter,
+    QPaintEvent,
+    QPen,
+    QPixmap,
+    QWheelEvent,
 )
 from PySide6.QtWidgets import QWidget
 
 from state import AppState
-from utils import config
-from utils.log import get_logger
-
 from tools.ellipse import Ellipse
 from tools.eraser import Eraser
 from tools.eyedropper import Eyedropper
 from tools.fill import Fill
 from tools.pencil import Pencil
 from tools.rect import Rect
+from utils import config
+from utils.log import get_logger
 
 if TYPE_CHECKING:
     from tools.base_tool import BaseTool

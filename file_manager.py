@@ -107,15 +107,16 @@ class FileManager:
 
     def export_image(self, filename: str, file_format: str | None, is_transparent: bool) -> bool:
         img_to_save = self.canvas.image.copy()
+        qt_file_format = file_format.encode("ascii") if file_format else None
         if not is_transparent:
             background_img = QImage(img_to_save.size(), QImage.Format.Format_ARGB32)
             background_img.fill(QColor(config.COLOR_WHITE))
             painter = QPainter(background_img)
             painter.drawImage(0, 0, img_to_save)
             painter.end()
-            return background_img.save(filename, file_format)
+            return background_img.save(filename, qt_file_format)
 
-        return img_to_save.save(filename, file_format)
+        return img_to_save.save(filename, qt_file_format)
 
     def _confirm_discard_if_needed(self) -> bool:
         if not self.app_state.is_dirty:

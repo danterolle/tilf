@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 
 from PySide6.QtCore import QSize, Qt
@@ -10,7 +10,7 @@ from utils import config, resource_path
 
 
 class Toolbar:
-    def __init__(self, main_window: QMainWindow, app_state: AppState, handlers: dict[str, Callable[..., object]]):
+    def __init__(self, main_window: QMainWindow, app_state: AppState, handlers: Mapping[str, Callable[..., object]]):
         self.main_window = main_window
         self.app_state = app_state
         self.handlers = handlers

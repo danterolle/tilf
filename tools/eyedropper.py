@@ -1,5 +1,5 @@
 from PySide6.QtCore import QPoint
-from PySide6.QtGui import QMouseEvent, QColor
+from PySide6.QtGui import QColor, QMouseEvent
 
 from tools.base_tool import BaseTool
 from utils import config

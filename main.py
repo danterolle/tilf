@@ -7,7 +7,8 @@ from PySide6.QtWidgets import QApplication
 from state import AppState
 from ui.editor import TilfEditor
 from utils import config
-from utils.log import get_logger, setup as setup_logging
+from utils.log import get_logger
+from utils.log import setup as setup_logging
 from utils.resource_path import get_resource_path
 
 

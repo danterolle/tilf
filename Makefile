@@ -4,7 +4,9 @@ VENV_DIR = env
 RESOURCES_DIR = assets
 STYLESHEET_FILE = style.qss
 PYINSTALLER_DATA_SEP = :
-PYTHON = $(VENV_DIR)/bin/python
+PYTHON ?= python3
+VENV_PYTHON = $(VENV_DIR)/bin/python
+PIP = $(VENV_PYTHON) -m pip
 
 ifeq ($(shell uname), Darwin)
 	ICON_FILE = $(RESOURCES_DIR)/icon.icns
@@ -12,40 +14,49 @@ else
 	ICON_FILE = $(RESOURCES_DIR)/icon.ico
 endif
 
-.PHONY: all build clean run install
+.PHONY: all build check clean dev install lint run test typecheck
 
 all: build
 
-install: $(VENV_DIR)/touchfile
+install: $(VENV_DIR)/.installed
 
-$(VENV_DIR)/touchfile: requirements.txt
+$(VENV_PYTHON):
+	@echo "Creating virtual environment..."
+	$(PYTHON) -m venv $(VENV_DIR)
+
+$(VENV_DIR)/.installed: pyproject.toml | $(VENV_PYTHON)
 	@echo "Creating virtual environment and installing dependencies..."
-	test -d $(VENV_DIR) || python3 -m venv $(VENV_DIR)
-	$(PYTHON) -m pip install --upgrade pip
-	$(PYTHON) -m pip install -r requirements.txt
-	@touch $(VENV_DIR)/touchfile
+	$(PIP) install --upgrade pip
+	$(PIP) install -e ".[dev]"
+	@touch $(VENV_DIR)/.installed
 
-requirements.txt:
-	@echo "Generating requirements.txt..."
-	@echo "pyside6" > requirements.txt
-	@echo "pyinstaller" >> requirements.txt
-	@echo "requirements.txt created successfully."
+dev: install
+	@echo "Running $(APP_NAME) from source..."
+	$(VENV_PYTHON) $(MAIN_SCRIPT)
 
-# pyinstaller --name tilf --onefile --windowed
-# --icon assets/icon.icns --add-data assets:assets --add-data style.qss:.
-# main.py
+lint: install
+	$(VENV_PYTHON) -m ruff check .
+
+typecheck: install
+	$(VENV_PYTHON) -m mypy .
+
+test: install
+	$(VENV_PYTHON) -m pytest -q
+
+check: lint typecheck test
+
 build: install
 	@echo "Building the application bundle..."
-	$(PYTHON) -m PyInstaller --name $(APP_NAME) \
-							--onefile \
-							--windowed \
-							--icon=$(ICON_FILE) \
-							--add-data "$(RESOURCES_DIR)$(PYINSTALLER_DATA_SEP)$(RESOURCES_DIR)" \
-							--add-data "$(STYLESHEET_FILE)$(PYINSTALLER_DATA_SEP)." \
-							$(MAIN_SCRIPT)
+	$(VENV_PYTHON) -m PyInstaller --name $(APP_NAME) \
+		--onefile \
+		--windowed \
+		--icon=$(ICON_FILE) \
+		--add-data "$(RESOURCES_DIR)$(PYINSTALLER_DATA_SEP)$(RESOURCES_DIR)" \
+		--add-data "$(STYLESHEET_FILE)$(PYINSTALLER_DATA_SEP)." \
+		$(MAIN_SCRIPT)
 	@echo "Build complete. Check the 'dist' folder."
 
-run:
+run: build
 	@echo "Running $(APP_NAME)..."
 	./dist/$(APP_NAME)
 
@@ -54,5 +65,4 @@ clean:
 	rm -rf build dist __pycache__
 	rm -f $(APP_NAME).spec
 	rm -rf $(VENV_DIR)
-	rm -f requirements.txt
 	@echo "Cleanup complete."

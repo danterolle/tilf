@@ -6,8 +6,26 @@ build-backend = "setuptools.build_meta"
 name = "tilf"
 version = "0.2"
 description = "Tiny Elf - A minimal pixel art editor"
+requires-python = ">=3.11"
 license = {text = "GPL-3.0-only"}
 authors = [{name = "Dario Camonita", email = "danterolle@catania.linux.it"}]
+dependencies = [
+    "PySide6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "mypy",
+    "PyInstaller",
+    "pytest",
+    "ruff",
+]
+
+[tool.setuptools]
+py-modules = ["file_manager", "main", "state"]
+
+[tool.setuptools.packages.find]
+include = ["tools*", "ui*", "utils*"]
 
 [tool.ruff]
 target-version = "py311"

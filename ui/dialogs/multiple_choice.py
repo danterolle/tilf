@@ -1,7 +1,12 @@
 from collections.abc import Sequence
 
 from PySide6.QtWidgets import (
-    QDialog, QDialogButtonBox, QLabel, QRadioButton, QVBoxLayout, QWidget,
+    QDialog,
+    QDialogButtonBox,
+    QLabel,
+    QRadioButton,
+    QVBoxLayout,
+    QWidget,
 )
 
 

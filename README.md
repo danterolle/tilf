@@ -100,11 +100,29 @@ Publish it as an Open Source project might be interesting for others as well.
 - Python 3, virtualenv
 - OS: Windows, MacOS or GNULinux
 - Dependencies:
-  - PySide6
-  - PyInstaller
+  - Runtime: PySide6
+  - Development/build: Ruff, pytest, mypy, PyInstaller
 
 I did not use uv or poetry for this project; 
 I don't think it is necessary to introduce a tool of that kind for a project that is, all things considered, simple.
+
+### Local development environment
+
+```bash
+python3 -m venv env
+source env/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
+python main.py
+```
+
+On MacOS and GNU/Linux, the Makefile can do the same setup:
+
+```bash
+make install
+make dev
+make check
+```
 
 ## Build on MacOS and GNU/Linux
 
@@ -157,7 +175,7 @@ py.exe -m venv env
 4) Install the dependencies:
 
 ```
-pip install pyside6 pyinstaller pillow
+pip install -e ".[dev]"
 ```
 
 Note: 
@@ -185,7 +203,7 @@ cd tilf
 
 2) Install the dependencies:
 ```
-pip install pyside6 pyinstaller pillow
+pip install -e ".[dev]"
 ```
 
 3) Run PyInstaller:

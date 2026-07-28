@@ -3,7 +3,7 @@ from typing import Any
 
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence
-from PySide6.QtWidgets import QLabel, QMainWindow, QToolBar
+from PySide6.QtWidgets import QMainWindow, QToolBar
 
 from state import AppState
 from utils import config, resource_path
@@ -24,10 +24,6 @@ class Toolbar:
         toolbar.setMovable(False)
 
         for data in config.TOOLBAR_ACTIONS:
-            if "section" in data:
-                self._add_section_label(toolbar, data["section"])
-                continue
-
             if data.get("sep"):
                 toolbar.addSeparator()
                 continue
@@ -41,11 +37,6 @@ class Toolbar:
 
         self.app_state.tool_changed.connect(self._update_active_tool_button)
         return toolbar
-
-    def _add_section_label(self, toolbar: QToolBar, text: str) -> None:
-        label = QLabel(text)
-        label.setObjectName("toolbarSectionLabel")
-        toolbar.addWidget(label)
 
     def _add_tool_group(self, toolbar: QToolBar) -> None:
         tools_group = QActionGroup(self.main_window)

@@ -1,5 +1,4 @@
 from collections.abc import Callable, Mapping
-from typing import Any
 
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence
@@ -7,6 +6,7 @@ from PySide6.QtWidgets import QMainWindow, QToolBar
 
 from state import AppState
 from utils import config, resource_path
+from utils.toolbar_config import ToolbarAction
 
 
 class Toolbar:
@@ -24,11 +24,11 @@ class Toolbar:
         toolbar.setMovable(False)
 
         for data in config.TOOLBAR_ACTIONS:
-            if data.get("sep"):
+            if data.separator:
                 toolbar.addSeparator()
                 continue
 
-            if data.get("is_tool_group"):
+            if data.tool_group:
                 self._add_tool_group(toolbar)
                 continue
 
@@ -43,41 +43,44 @@ class Toolbar:
         tools_group.setExclusive(True)
 
         for tool_name, data in config.TOOLS.items():
-            action_data = data.copy()
-            action_data["checkable"] = True
-            action_data["handler_name"] = (
-                lambda checked, tool=tool_name: self.app_state.set_tool(tool) if checked else None
+            action_data = ToolbarAction(
+                text=data.text,
+                icon=data.icon,
+                shortcut=data.shortcut,
+                tooltip=data.tooltip,
+                checkable=True,
             )
 
-            action = self._create_action(action_data, tooltip_prefix=data.get("text", ""))
+            action = self._create_action(action_data, tooltip_prefix=data.text)
+            action.triggered.connect(
+                lambda checked, tool=tool_name: self.app_state.set_tool(tool) if checked else None
+            )
             tools_group.addAction(action)
             toolbar.addAction(action)
             self.tool_actions[tool_name] = action
 
-    def _create_action(self, data: dict[str, Any], tooltip_prefix: str = "") -> QAction:
-        text = data.get("text", "")
-        icon_path = data.get("icon", "")
+    def _create_action(self, data: ToolbarAction, tooltip_prefix: str = "") -> QAction:
+        text = data.text
+        icon_path = data.icon
         icon = QIcon(resource_path.get_resource_path(icon_path)) if icon_path else QIcon()
 
         action = QAction(icon, text, self.main_window)
 
-        if "shortcut" in data:
-            action.setShortcut(QKeySequence(data["shortcut"]))
-        if "checkable" in data:
+        if data.shortcut:
+            action.setShortcut(QKeySequence(data.shortcut))
+        if data.checkable:
             action.setCheckable(True)
-        if "checked" in data:
+        if data.checked:
             action.setChecked(True)
 
-        handler_name = data.get("handler_name")
+        handler_name = data.handler_name
         if handler_name:
-            if callable(handler_name):
-                action.triggered.connect(handler_name)
-            elif handler_name in self.handlers:
+            if handler_name in self.handlers:
                 action.triggered.connect(self.handlers[handler_name])
                 self.actions_by_handler[handler_name] = action
 
-        tooltip = data.get("tooltip", tooltip_prefix or text)
-        shortcut_text = f" ({data['shortcut']})" if "shortcut" in data else ""
+        tooltip = data.tooltip or tooltip_prefix or text
+        shortcut_text = f" ({data.shortcut})" if data.shortcut else ""
         action.setToolTip(f"{tooltip}{shortcut_text}")
 
         return action

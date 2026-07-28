@@ -32,9 +32,9 @@ class About(QDialog):
                 )
             )
         else:
+            icon_label.setObjectName("missingIconLabel")
             icon_label.setText("(Icon)")
             icon_label.setFixedSize(128, 128)
-            icon_label.setStyleSheet("border: 1px dashed #888; color: #888; border-radius: 8px;")
 
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 

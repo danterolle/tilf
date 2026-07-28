@@ -29,6 +29,7 @@ from ui.dialogs.multiple_choice import MultipleChoice
 from ui.toolbar import Toolbar
 from ui.widgets.color_swatch import ColorSwatchButton
 from utils import config
+from utils.log import get_logger
 
 
 class TilfEditor(QMainWindow):
@@ -269,8 +270,8 @@ class TilfEditor(QMainWindow):
     def _update_status_bar(self, col: int, row: int, color: QColor) -> None:
         try:
             self.status_bar.showMessage(f"x={col}, y={row} | color={color.name(QColor.NameFormat.HexArgb)}")
-        except RuntimeError:
-            pass
+        except RuntimeError as error:
+            get_logger().debug("Skipping status bar update after widget teardown: %s", error)
 
     def _schedule_preview_refresh(self) -> None:
         if not self._preview_dirty:

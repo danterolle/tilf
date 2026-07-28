@@ -160,6 +160,12 @@ QLabel#previewLabel {
     padding: 8px;
 }
 
+QLabel#missingIconLabel {
+    border: 1px dashed #64748b;
+    border-radius: 8px;
+    color: #94a3b8;
+}
+
 QGroupBox {
     background-color: #111827;
     border: 1px solid #334155;

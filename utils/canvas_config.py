@@ -1,0 +1,36 @@
+from PySide6.QtGui import QColor
+
+DEFAULT_TILE_COLS = 8
+DEFAULT_TILE_ROWS = 6
+DEFAULT_TILE_SIZE = 16
+DEFAULT_WIDTH = DEFAULT_TILE_COLS * DEFAULT_TILE_SIZE
+DEFAULT_HEIGHT = DEFAULT_TILE_ROWS * DEFAULT_TILE_SIZE
+DEFAULT_ZOOM = 35
+
+MAX_TILE_COLS = 64
+MAX_TILE_ROWS = 64
+MIN_CANVAS_SIZE = 1
+MAX_CANVAS_SIZE = 4096
+MIN_TILE_SIZE = 8
+MAX_TILE_SIZE = 128
+CANVAS_PRESETS = {
+    "Default tile grid": (DEFAULT_WIDTH, DEFAULT_HEIGHT),
+    "16 x 16 icon": (16, 16),
+    "32 x 32 icon": (32, 32),
+    "64 x 64 icon": (64, 64),
+    "128 x 128 sprite": (128, 128),
+}
+
+DEFAULT_PRIMARY_COLOR = QColor("black")
+DEFAULT_SECONDARY_COLOR = QColor("white")
+DEFAULT_GRID_COLOR = QColor(80, 80, 80, 160)
+CHECKERBOARD_COLOR_1 = QColor(220, 220, 220, 190)
+CHECKERBOARD_COLOR_2 = QColor(180, 180, 180, 150)
+
+SHIFT_OPTIONS = ["Left", "Right", "Up", "Down"]
+SHIFT_OFFSETS = {
+    "right": (1, 0),
+    "left": (-1, 0),
+    "down": (0, 1),
+    "up": (0, -1),
+}

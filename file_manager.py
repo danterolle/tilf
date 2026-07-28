@@ -5,12 +5,12 @@ import time
 from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QWidget
 
-from core.image_io import export_image as save_image
-from core.image_io import infer_image_format
 from state import AppState
 from ui.canvas import Canvas
 from ui.dialogs.new_canvas import NewCanvas
 from utils import config
+from utils.image_io import export_image as save_image
+from utils.image_io import infer_image_format
 from utils.log import get_logger
 
 

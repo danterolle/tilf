@@ -1,208 +1,113 @@
-from typing import Any, Dict, List
-
-from PySide6.QtGui import QColor
-
-APP_VERSION = "0.3"
-APP_NAME = "Tilf - Pixel Art Editor"
-DEFAULT_TILE_COLS = 8
-DEFAULT_TILE_ROWS = 6
-DEFAULT_TILE_SIZE = 16
-DEFAULT_WIDTH = DEFAULT_TILE_COLS * DEFAULT_TILE_SIZE
-DEFAULT_HEIGHT = DEFAULT_TILE_ROWS * DEFAULT_TILE_SIZE
-DEFAULT_ZOOM = 35
-MACOS_PINCH_ZOOM_SENSITIVITY = 12
-HISTORY_LIMIT = 50
-AUTOSAVE_DIR = "tilf_autosaves"
-
-MAX_TILE_COLS = 64
-MAX_TILE_ROWS = 64
-MIN_CANVAS_SIZE = 1
-MAX_CANVAS_SIZE = 4096
-MIN_TILE_SIZE = 8
-MAX_TILE_SIZE = 128
-CANVAS_PRESETS = {
-    "Default tile grid": (DEFAULT_WIDTH, DEFAULT_HEIGHT),
-    "16 x 16 icon": (16, 16),
-    "32 x 32 icon": (32, 32),
-    "64 x 64 icon": (64, 64),
-    "128 x 128 sprite": (128, 128),
-}
-
-DEFAULT_PRIMARY_COLOR = QColor("black")
-DEFAULT_SECONDARY_COLOR = QColor("white")
-DEFAULT_GRID_COLOR = QColor(80, 80, 80, 160)
-CHECKERBOARD_COLOR_1 = QColor(220, 220, 220, 190)
-CHECKERBOARD_COLOR_2 = QColor(180, 180, 180, 150)
-
-# --- File I/O ---
-OPEN_FILE_FILTER = "Images (*.png *.jpg *.jpeg *.bmp)"
-SAVE_FILE_FILTER = "PNG (*.png);;JPEG (*.jpg *.jpeg);;BMP (*.bmp)"
-SUPPORTED_EXTENSIONS = (".png", ".jpg", ".jpeg", ".bmp")
-JPEG_EXTENSIONS = ("JPG", "JPEG")
-IMAGE_FORMAT_PNG = "PNG"
-IMAGE_FORMAT_JPEG = "JPEG"
-IMAGE_FORMAT_BMP = "BMP"
-DEFAULT_FILENAME = "sprite.png"
-COLOR_WHITE = "white"
-COLOR_TRANSPARENT = "transparent"
-AUTOSAVE_TIMESTAMP_FORMAT = "%Y%m%d_%H%M%S"
-
-# --- UI ---
-TITLE_ERROR = "Error"
-TITLE_UNSAVED = "Unsaved Changes"
-TITLE_TRANSPARENCY = "Transparency"
-TITLE_CLEAR_CANVAS = "Clear Canvas"
-TITLE_SHIFT_CANVAS = "Shift Canvas"
-TITLE_NEW_CANVAS = "New Canvas"
-TITLE_ABOUT = "About Tilf"
-TITLE_OPEN_IMAGE = "Open Image"
-TITLE_SAVE_IMAGE = "Save Image"
-TITLE_PRIMARY_COLOR = "Choose Primary Color"
-TITLE_SECONDARY_COLOR = "Choose Secondary Color"
-TITLE_GRID_COLOR = "Choose Grid Color"
-
-MENU_FILE = "File"
-MENU_EDIT = "Edit"
-MENU_VIEW = "View"
-MENU_HELP = "Help"
-
-ACTION_ABOUT = "About Tilf"
-ACTION_CLEAR_CANVAS = "Clear Canvas"
-ACTION_GRID_COLOR = "Grid Color"
-ACTION_NEW = "New"
-ACTION_OPEN = "Open"
-ACTION_QUIT = "Quit"
-ACTION_REDO = "Redo"
-ACTION_RESET_ZOOM = "Reset Zoom"
-ACTION_SAVE = "Save"
-ACTION_UNDO = "Undo"
-
-MSG_FAILED_LOAD = "Failed to load the image."
-MSG_FAILED_SAVE_FMT = "Failed to save the image to: {path}"
-MSG_FILE_SAVED = "Image saved."
-MSG_DISCARD_CHANGES = "You have unsaved changes. Do you want to continue and discard them?"
-MSG_SAVE_BEFORE_QUIT = "You have unsaved changes. Do you want to save before quitting?"
-MSG_TRANSPARENCY_PROMPT = "Save with a transparent background?"
-MSG_CLEAR_CONFIRM = "Are you sure you want to clear the canvas?"
-MSG_SHIFT_CANVAS = "Shift canvas 1px to the:"
-
-LABEL_WIDTH = "Width (px):"
-LABEL_HEIGHT = "Height (px):"
-LABEL_PRESET = "Preset:"
-LABEL_RESULTING_CANVAS = "Result:"
-LABEL_TILE_COLUMNS = "Tile columns:"
-LABEL_TILE_ROWS = "Tile rows:"
-LABEL_TILE_SIZE = "Tile size:"
-BTN_OK = "OK"
-BTN_CANCEL = "Cancel"
-BTN_RESET_ZOOM = "Reset Zoom"
-BTN_GRID_COLOR = "Change grid color"
-LABEL_BACKGROUND_COLOR = "Background:"
-LABEL_CANVAS = "Canvas"
-LABEL_CANVAS_SIZE = "Size:"
-LABEL_COLORS = "Colors"
-LABEL_GRID = "Grid:"
-LABEL_INSPECTOR = "Inspector"
-LABEL_PRIMARY_COLOR = "Primary:"
-LABEL_PREVIEW = "Preview"
-LABEL_ZOOM = "Zoom:"
-TOOLBAR_TITLE = "Main Toolbar"
-
-DIRTY_MARKER = "*"
-UNTITLED_NAME = "Untitled"
-WINDOW_TITLE_FMT = "{marker}{name} - " + APP_NAME
-RESET_ZOOM_TOOLTIP_FMT = "Reset zoom to {zoom}x"
-
-# --- Canvas shift directions ---
-SHIFT_OPTIONS = ["Left", "Right", "Up", "Down"]
-SHIFT_OFFSETS = {
-    "right": (1, 0),
-    "left": (-1, 0),
-    "down": (0, 1),
-    "up": (0, -1),
-}
-
-# --- Assets ---
-ICON_FILENAME = "icon.icns"
-STYLESHEET_FILENAME = "style.qss"
-LOGO_RESOURCE = "assets/logo.png"
-
-# --- Console messages ---
-MSG_ICON_NOT_FOUND_FMT = "Tilf icon not found at: {path}"
-MSG_STYLESHEET_LOADED_FMT = "Stylesheet loaded from: {path}"
-MSG_STYLESHEET_MISSING_FMT = "Stylesheet not found at: {path}. Running with default style."
-MSG_AUTOSAVE_SUCCESS_FMT = "Autosaved recovery file to: {path}"
-MSG_AUTOSAVE_ERROR_FMT = "Error during autosave: {error}"
-MSG_TOOL_WARNING_FMT = "Warning: Tool '{tool_name}' not found."
-
-class ToolType:
-    PENCIL = "pencil"
-    ERASER = "eraser"
-    FILL = "fill"
-    EYEDROPPER = "eyedropper"
-    RECT = "rect"
-    ELLIPSE = "ellipse"
-
-# The key (e.g., "pencil") is like the tool ID
-TOOLS: Dict[str, Dict[str, Any]] = {
-    ToolType.PENCIL: {
-        "text": "Pencil", "icon": "assets/icons/pencil.png", "shortcut": "B",
-        "tooltip": "Draw with the primary color. Hold Alt to use secondary color."
-    },
-    ToolType.ERASER: {
-        "text": "Eraser", "icon": "assets/icons/eraser.png", "shortcut": "E",
-        "tooltip": "Erase pixels to the secondary (background) color."
-    },
-    ToolType.FILL: {
-        "text": "Fill", "icon": "assets/icons/bucket.png", "shortcut": "G",
-        "tooltip": "Fill an area with the primary color."
-    },
-    ToolType.EYEDROPPER: {
-        "text": "Eyedropper", "icon": "assets/icons/picker.png", "shortcut": "I",
-        "tooltip": "Pick a color from the canvas. Right-click is a shortcut."
-    },
-    ToolType.RECT: {
-        "text": "Rectangle", "icon": "assets/icons/square.png", "shortcut": "R",
-        "tooltip": "Draw a rectangle. Hold Shift for a perfect square."
-    },
-    ToolType.ELLIPSE: {
-        "text": "Ellipse", "icon": "assets/icons/circle.png", "shortcut": "C",
-        "tooltip": "Draw an ellipse. Hold Shift for a perfect circle."
-    },
-}
-
-# This data structure drives the creation of the toolbar.
-# "handler" is the name of the method to be called on the TilfEditor class or its components.
-TOOLBAR_ACTIONS: List[Dict[str, Any]] = [
-    {"text": "New", "icon": "assets/icons/file.png", "shortcut": "Ctrl+N", "handler_name": "new_file"},
-    {"text": "Open", "icon": "assets/icons/open.png", "shortcut": "Ctrl+O", "handler_name": "open_file"},
-    {"text": "Save", "icon": "assets/icons/save.png", "shortcut": "Ctrl+S", "handler_name": "save_file"},
-    {"sep": True},
-    {"text": "Undo", "icon": "assets/icons/arrow_back.png", "shortcut": "Ctrl+Z", "handler_name": "undo"},
-    {"text": "Redo", "icon": "assets/icons/arrow_forward.png", "shortcut": "Ctrl+Y", "handler_name": "redo"},
-    {"sep": True},
-    {"is_tool_group": True},
-    {"sep": True},
-    {
-        "text": "Color", "icon": "assets/icons/color.png",
-        "handler_name": "choose_primary_color", "tooltip": "Choose primary brush color",
-    },
-    {
-        "text": "Background", "icon": "assets/icons/background.png",
-        "handler_name": "choose_secondary_color", "tooltip": "Choose canvas background color",
-    },
-    {"sep": True},
-    {"text": "Clear", "icon": "assets/icons/clear.png", "handler_name": "clear_canvas", "tooltip": "Clear canvas"},
-    {
-        "text": "Shift", "icon": "assets/icons/shift.png",
-        "handler_name": "shift_canvas", "tooltip": "Shift canvas up, down, left, or right by 1px.",
-    },
-    {"sep": True},
-    {
-        "text": "Grid", "icon": "assets/icons/grid.png",
-        "checkable": True, "checked": True, "handler_name": "toggle_grid",
-    },
-    {"text": "Grid color", "icon": "assets/icons/grid_color.png", "handler_name": "choose_grid_color"},
-    {"sep": True},
-    {"text": "About", "icon": "assets/logo.png", "handler_name": "about", "tooltip": "About Tilf"},
-]
+from utils.app_config import (  # noqa: F401
+    APP_NAME,
+    APP_VERSION,
+    AUTOSAVE_DIR,
+    HISTORY_LIMIT,
+    MACOS_PINCH_ZOOM_SENSITIVITY,
+)
+from utils.canvas_config import (  # noqa: F401
+    CANVAS_PRESETS,
+    CHECKERBOARD_COLOR_1,
+    CHECKERBOARD_COLOR_2,
+    DEFAULT_GRID_COLOR,
+    DEFAULT_HEIGHT,
+    DEFAULT_PRIMARY_COLOR,
+    DEFAULT_SECONDARY_COLOR,
+    DEFAULT_TILE_COLS,
+    DEFAULT_TILE_ROWS,
+    DEFAULT_TILE_SIZE,
+    DEFAULT_WIDTH,
+    DEFAULT_ZOOM,
+    MAX_CANVAS_SIZE,
+    MAX_TILE_COLS,
+    MAX_TILE_ROWS,
+    MAX_TILE_SIZE,
+    MIN_CANVAS_SIZE,
+    MIN_TILE_SIZE,
+    SHIFT_OFFSETS,
+    SHIFT_OPTIONS,
+)
+from utils.file_config import (  # noqa: F401
+    AUTOSAVE_TIMESTAMP_FORMAT,
+    COLOR_TRANSPARENT,
+    COLOR_WHITE,
+    DEFAULT_FILENAME,
+    ICON_FILENAME,
+    IMAGE_FORMAT_BMP,
+    IMAGE_FORMAT_JPEG,
+    IMAGE_FORMAT_PNG,
+    JPEG_EXTENSIONS,
+    LOGO_RESOURCE,
+    OPEN_FILE_FILTER,
+    SAVE_FILE_FILTER,
+    STYLESHEET_FILENAME,
+    SUPPORTED_EXTENSIONS,
+)
+from utils.toolbar_config import TOOLBAR_ACTIONS, TOOLS, ToolType  # noqa: F401
+from utils.ui_text import (  # noqa: F401
+    ACTION_ABOUT,
+    ACTION_CLEAR_CANVAS,
+    ACTION_GRID_COLOR,
+    ACTION_NEW,
+    ACTION_OPEN,
+    ACTION_QUIT,
+    ACTION_REDO,
+    ACTION_RESET_ZOOM,
+    ACTION_SAVE,
+    ACTION_UNDO,
+    BTN_CANCEL,
+    BTN_GRID_COLOR,
+    BTN_OK,
+    BTN_RESET_ZOOM,
+    DIRTY_MARKER,
+    LABEL_BACKGROUND_COLOR,
+    LABEL_CANVAS,
+    LABEL_CANVAS_SIZE,
+    LABEL_COLORS,
+    LABEL_GRID,
+    LABEL_HEIGHT,
+    LABEL_INSPECTOR,
+    LABEL_PRESET,
+    LABEL_PREVIEW,
+    LABEL_PRIMARY_COLOR,
+    LABEL_RESULTING_CANVAS,
+    LABEL_TILE_COLUMNS,
+    LABEL_TILE_ROWS,
+    LABEL_TILE_SIZE,
+    LABEL_WIDTH,
+    LABEL_ZOOM,
+    MENU_EDIT,
+    MENU_FILE,
+    MENU_HELP,
+    MENU_VIEW,
+    MSG_AUTOSAVE_ERROR_FMT,
+    MSG_AUTOSAVE_SUCCESS_FMT,
+    MSG_CLEAR_CONFIRM,
+    MSG_DISCARD_CHANGES,
+    MSG_FAILED_LOAD,
+    MSG_FAILED_SAVE_FMT,
+    MSG_FILE_SAVED,
+    MSG_ICON_NOT_FOUND_FMT,
+    MSG_SAVE_BEFORE_QUIT,
+    MSG_SHIFT_CANVAS,
+    MSG_STYLESHEET_LOADED_FMT,
+    MSG_STYLESHEET_MISSING_FMT,
+    MSG_TOOL_WARNING_FMT,
+    MSG_TRANSPARENCY_PROMPT,
+    RESET_ZOOM_TOOLTIP_FMT,
+    TITLE_ABOUT,
+    TITLE_CLEAR_CANVAS,
+    TITLE_ERROR,
+    TITLE_GRID_COLOR,
+    TITLE_NEW_CANVAS,
+    TITLE_OPEN_IMAGE,
+    TITLE_PRIMARY_COLOR,
+    TITLE_SAVE_IMAGE,
+    TITLE_SECONDARY_COLOR,
+    TITLE_SHIFT_CANVAS,
+    TITLE_TRANSPARENCY,
+    TITLE_UNSAVED,
+    TOOLBAR_TITLE,
+    UNTITLED_NAME,
+    WINDOW_TITLE_FMT,
+)

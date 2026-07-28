@@ -16,7 +16,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import QWidget
 
-from core.document import CanvasDocument, ShapeKind
+from core.document import CanvasDocument, PixelSnapshot, ShapeKind
 from state import AppState
 from tools.ellipse import Ellipse
 from tools.eraser import Eraser
@@ -26,6 +26,7 @@ from tools.pencil import Pencil
 from tools.rect import Rect
 from utils import config
 from utils.log import get_logger
+from utils.qt_image import color_to_value, image_from_pixels, image_to_pixels, transparent_value, value_to_color
 
 if TYPE_CHECKING:
     from tools.base_tool import BaseTool
@@ -42,7 +43,7 @@ class Canvas(QWidget):
         self.document = CanvasDocument(
             config.DEFAULT_WIDTH,
             config.DEFAULT_HEIGHT,
-            self.app_state.secondary_color,
+            color_to_value(self.app_state.secondary_color),
             history_limit=config.HISTORY_LIMIT,
             tile_size=config.DEFAULT_TILE_SIZE,
         )
@@ -50,7 +51,8 @@ class Canvas(QWidget):
         self.grid_color: QColor = config.DEFAULT_GRID_COLOR
         self.is_grid_visible: bool = True
         self._gesture_zoom_remainder = 0.0
-        self._pending_undo_snapshot: QImage | None = None
+        self._image_cache: QImage | None = None
+        self._pending_undo_snapshot: PixelSnapshot | None = None
 
         self._is_drawing: bool = False
         self._tools: dict[str, BaseTool] = self._create_tools()
@@ -90,7 +92,9 @@ class Canvas(QWidget):
 
     @property
     def image(self) -> QImage:
-        return self.document.image
+        if self._image_cache is None:
+            self._image_cache = image_from_pixels(self.columns, self.rows, self.document.pixels)
+        return self._image_cache
 
     @property
     def columns(self) -> int:
@@ -118,60 +122,70 @@ class Canvas(QWidget):
         self.document.reset(
             columns,
             rows,
-            self.app_state.secondary_color,
+            color_to_value(self.app_state.secondary_color),
             clear_history=clear_history,
             tile_size=tile_size,
         )
         if clear_history:
             self._pending_undo_snapshot = None
+        self._invalidate_image_cache()
         self._update_size()
         self._emit_history_changed()
         self.app_state.notify_image_changed()
 
     def load_image(self, image: QImage) -> None:
         self._pending_undo_snapshot = None
-        transparent = QColor(config.COLOR_TRANSPARENT)
-        self.document.load_image(image, transparent)
-        self.app_state.set_secondary_color(transparent)
+        source = image.convertToFormat(QImage.Format.Format_ARGB32)
+        self.document.load_pixels(source.width(), source.height(), image_to_pixels(source), transparent_value())
+        self.app_state.set_secondary_color(QColor(config.COLOR_TRANSPARENT))
+        self._invalidate_image_cache()
         self._update_size()
         self._emit_history_changed()
         self.app_state.notify_image_changed()
 
     def clear_canvas(self) -> None:
-        if self.document.clear(self.app_state.secondary_color):
+        if self.document.clear(color_to_value(self.app_state.secondary_color)):
+            self._invalidate_image_cache()
             self.update()
             self._emit_history_changed()
             self.app_state.notify_image_changed()
 
     def undo(self) -> None:
         if self.document.undo():
+            self._invalidate_image_cache()
             self._update_size()
             self._emit_history_changed()
             self.app_state.notify_image_changed()
 
     def redo(self) -> None:
         if self.document.redo():
+            self._invalidate_image_cache()
             self._update_size()
             self._emit_history_changed()
             self.app_state.notify_image_changed()
 
     def shift_image(self, direction: str) -> None:
-        if self.document.shift(direction, self.app_state.secondary_color, config.SHIFT_OFFSETS):
+        if self.document.shift(direction, color_to_value(self.app_state.secondary_color), config.SHIFT_OFFSETS):
+            self._invalidate_image_cache()
             self.update()
             self._emit_history_changed()
             self.app_state.notify_image_changed()
 
     def draw_pixel(self, col: int, row: int, color: QColor) -> bool:
-        if self.document.draw_pixel(col, row, color):
+        if self.document.draw_pixel(col, row, color_to_value(color)):
+            self._invalidate_image_cache()
             self.update(QRect(col * self.cell_size, row * self.cell_size, self.cell_size, self.cell_size))
             return True
         return False
 
     def flood_fill(self, col: int, row: int, color: QColor) -> bool:
-        return self.document.flood_fill(col, row, color)
+        changed = self.document.flood_fill(col, row, color_to_value(color))
+        if changed:
+            self._invalidate_image_cache()
+        return changed
 
     def pixel_color(self, col: int, row: int) -> QColor:
-        return self.document.pixel_color(col, row)
+        return value_to_color(self.document.pixel_color(col, row))
 
     def draw_shape(
         self,
@@ -181,15 +195,18 @@ class Canvas(QWidget):
         force_square: bool,
         color: QColor,
     ) -> bool:
-        return self.document.draw_shape(
+        changed = self.document.draw_shape(
             shape_kind,
             start_cell.x(),
             start_cell.y(),
             end_cell.x(),
             end_cell.y(),
             force_square,
-            color,
+            color_to_value(color),
         )
+        if changed:
+            self._invalidate_image_cache()
+        return changed
 
     def create_shape_preview(
         self,
@@ -199,23 +216,25 @@ class Canvas(QWidget):
         force_square: bool,
         color: QColor,
     ) -> QImage:
-        return self.document.create_shape_preview(
+        preview_pixels = self.document.create_shape_preview(
             shape_kind,
             start_cell.x(),
             start_cell.y(),
             end_cell.x(),
             end_cell.y(),
             force_square,
-            color,
+            color_to_value(color),
         )
+        return image_from_pixels(self.columns, self.rows, preview_pixels)
 
     def _on_secondary_color_change(self, new_bg_color: QColor) -> None:
-        if self.document.replace_background(new_bg_color):
+        if self.document.replace_background(color_to_value(new_bg_color)):
+            self._invalidate_image_cache()
             self.update()
             self._emit_history_changed()
             self.app_state.notify_image_changed()
 
-    def _push_undo_snapshot(self, snapshot: QImage) -> None:
+    def _push_undo_snapshot(self, snapshot: PixelSnapshot) -> None:
         self.document.commit_snapshot(snapshot)
         self._emit_history_changed()
 
@@ -230,6 +249,9 @@ class Canvas(QWidget):
         height = self.rows * self.cell_size + 1
         self.setFixedSize(width, height)
         self.update()
+
+    def _invalidate_image_cache(self) -> None:
+        self._image_cache = None
 
     def _emit_history_changed(self) -> None:
         self.history_changed.emit(self.document.can_undo, self.document.can_redo)

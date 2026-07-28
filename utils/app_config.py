@@ -1,0 +1,5 @@
+APP_VERSION = "0.3"
+APP_NAME = "Tilf - Pixel Art Editor"
+AUTOSAVE_DIR = "tilf_autosaves"
+HISTORY_LIMIT = 50
+MACOS_PINCH_ZOOM_SENSITIVITY = 12

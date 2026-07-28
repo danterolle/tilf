@@ -27,6 +27,7 @@ from ui.canvas import Canvas
 from ui.dialogs.about import About
 from ui.dialogs.multiple_choice import MultipleChoice
 from ui.toolbar import Toolbar
+from ui.widgets.color_swatch import ColorSwatchButton
 from utils import config
 
 
@@ -133,9 +134,9 @@ class TilfEditor(QMainWindow):
         self.redo_toolbar_action = self.toolbar_builder.action_for_handler("redo")
 
     def _setup_preview_dock(self) -> None:
-        self.primary_color_button = QPushButton()
+        self.primary_color_button = ColorSwatchButton()
         self.primary_color_button.clicked.connect(self.choose_primary_color)
-        self.secondary_color_button = QPushButton()
+        self.secondary_color_button = ColorSwatchButton()
         self.secondary_color_button.clicked.connect(self.choose_secondary_color)
         self.canvas_info_label = QLabel()
         self.zoom_value_label = QLabel()
@@ -282,20 +283,8 @@ class TilfEditor(QMainWindow):
     def _update_zoom_label(self, zoom: int) -> None:
         self.zoom_value_label.setText(f"{zoom}x")
 
-    def _update_color_swatch(self, button: QPushButton, color: QColor) -> None:
-        text_color = "#f8fafc" if color.lightness() < 150 or color.alpha() < 128 else "#111827"
-        button.setText(color.name(QColor.NameFormat.HexArgb))
-        button.setToolTip(color.name(QColor.NameFormat.HexArgb))
-        button.setStyleSheet(
-            "QPushButton {"
-            f"background-color: rgba({color.red()}, {color.green()}, {color.blue()}, {color.alpha()});"
-            "border: 1px solid #475569;"
-            "border-radius: 8px;"
-            f"color: {text_color};"
-            "font-weight: bold;"
-            "min-height: 32px;"
-            "}"
-        )
+    def _update_color_swatch(self, button: ColorSwatchButton, color: QColor) -> None:
+        button.set_color(color)
 
     def _update_history_actions(self, can_undo: bool, can_redo: bool) -> None:
         if self.undo_menu_action is not None:

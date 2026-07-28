@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
+from math import cos, pi, sin
 from typing import Literal
 
-from PySide6.QtGui import QColor, QImage, QPainter
-
+ColorValue = int
+PixelSnapshot = tuple[ColorValue, ...]
 ShapeKind = Literal["rect", "ellipse"]
 ShapeBounds = tuple[int, int, int, int]
+TRANSPARENT_COLOR: ColorValue = 0
 
 
 class CanvasDocument:
@@ -14,7 +16,7 @@ class CanvasDocument:
         self,
         columns: int,
         rows: int,
-        background_color: QColor,
+        background_color: ColorValue,
         *,
         history_limit: int,
         tile_size: int,
@@ -22,18 +24,22 @@ class CanvasDocument:
         self.history_limit = history_limit
         self.tile_size = tile_size
         self.background_color = background_color
-        self.image = QImage()
         self.columns = 0
         self.rows = 0
-        self._undo_stack: list[QImage] = []
-        self._redo_stack: list[QImage] = []
+        self._pixels: list[ColorValue] = []
+        self._undo_stack: list[PixelSnapshot] = []
+        self._redo_stack: list[PixelSnapshot] = []
         self.reset(columns, rows, background_color, clear_history=True)
+
+    @property
+    def pixels(self) -> PixelSnapshot:
+        return tuple(self._pixels)
 
     def reset(
         self,
         columns: int,
         rows: int,
-        background_color: QColor,
+        background_color: ColorValue,
         *,
         clear_history: bool = False,
         tile_size: int = 0,
@@ -44,17 +50,26 @@ class CanvasDocument:
             self.tile_size = tile_size
 
         self.background_color = background_color
-        self.image = QImage(self.columns, self.rows, QImage.Format.Format_ARGB32)
-        self.image.fill(background_color)
+        self._pixels = [background_color] * (columns * rows)
 
         if clear_history:
             self.clear_history()
 
-    def load_image(self, image: QImage, background_color: QColor) -> None:
+    def load_pixels(
+        self,
+        columns: int,
+        rows: int,
+        pixels: Sequence[ColorValue],
+        background_color: ColorValue,
+    ) -> None:
+        expected_size = columns * rows
+        if len(pixels) != expected_size:
+            raise ValueError(f"Expected {expected_size} pixels, got {len(pixels)}")
+
         self.clear_history()
-        self.image = image.convertToFormat(QImage.Format.Format_ARGB32)
-        self.columns = self.image.width()
-        self.rows = self.image.height()
+        self.columns = columns
+        self.rows = rows
+        self._pixels = list(pixels)
         self.background_color = background_color
 
     def clear_history(self) -> None:
@@ -69,66 +84,75 @@ class CanvasDocument:
     def can_redo(self) -> bool:
         return bool(self._redo_stack)
 
-    def create_snapshot(self) -> QImage:
-        return self.image.copy()
+    def create_snapshot(self) -> PixelSnapshot:
+        return tuple(self._pixels)
 
-    def commit_snapshot(self, snapshot: QImage) -> None:
+    def commit_snapshot(self, snapshot: PixelSnapshot) -> None:
         self._undo_stack.append(snapshot)
         if len(self._undo_stack) > self.history_limit:
             self._undo_stack.pop(0)
         self._redo_stack.clear()
 
-    def clear(self, background_color: QColor) -> bool:
+    def clear(self, background_color: ColorValue) -> bool:
         self.commit_snapshot(self.create_snapshot())
         self.background_color = background_color
-        self.image.fill(background_color)
+        self._pixels = [background_color] * (self.columns * self.rows)
         return True
 
-    def draw_pixel(self, col: int, row: int, color: QColor) -> bool:
-        if not self.contains(col, row) or self.image.pixelColor(col, row) == color:
+    def draw_pixel(self, col: int, row: int, color: ColorValue) -> bool:
+        if not self.contains(col, row):
             return False
 
-        self.image.setPixelColor(col, row, color)
+        index = self._pixel_index(col, row)
+        if self._pixels[index] == color:
+            return False
+
+        self._pixels[index] = color
         return True
 
-    def pixel_color(self, col: int, row: int) -> QColor:
+    def pixel_color(self, col: int, row: int) -> ColorValue:
         if not self.contains(col, row):
-            return QColor("transparent")
-        return self.image.pixelColor(col, row)
+            return TRANSPARENT_COLOR
+        return self._pixels[self._pixel_index(col, row)]
 
-    def flood_fill(self, start_col: int, start_row: int, new_color: QColor) -> bool:
+    def flood_fill(self, start_col: int, start_row: int, new_color: ColorValue) -> bool:
         if not self.contains(start_col, start_row):
             return False
 
-        target_rgba = self.image.pixel(start_col, start_row)
-        new_rgba = new_color.rgba()
-        if target_rgba == new_rgba:
+        target_color = self.pixel_color(start_col, start_row)
+        if target_color == new_color:
             return False
 
         stack = [(start_col, start_row)]
         while stack:
             col, row = stack.pop()
-            if self.contains(col, row) and self.image.pixel(col, row) == target_rgba:
-                self.image.setPixel(col, row, new_rgba)
+            if self.contains(col, row) and self.pixel_color(col, row) == target_color:
+                self._pixels[self._pixel_index(col, row)] = new_color
                 stack.extend([(col + 1, row), (col - 1, row), (col, row + 1), (col, row - 1)])
 
         return True
 
-    def shift(self, direction: str, background_color: QColor, offsets: Mapping[str, tuple[int, int]]) -> bool:
+    def shift(
+        self,
+        direction: str,
+        background_color: ColorValue,
+        offsets: Mapping[str, tuple[int, int]],
+    ) -> bool:
         dx, dy = offsets.get(direction, (0, 0))
         if dx == 0 and dy == 0:
             return False
 
         self.commit_snapshot(self.create_snapshot())
 
-        shifted_image = QImage(self.image.size(), QImage.Format.Format_ARGB32)
-        shifted_image.fill(background_color)
+        shifted_pixels = [background_color] * (self.columns * self.rows)
+        for row in range(self.rows):
+            for col in range(self.columns):
+                target_col = col + dx
+                target_row = row + dy
+                if self.contains(target_col, target_row):
+                    shifted_pixels[self._pixel_index(target_col, target_row)] = self.pixel_color(col, row)
 
-        painter = QPainter(shifted_image)
-        painter.drawImage(dx, dy, self.image)
-        painter.end()
-
-        self.image = shifted_image
+        self._pixels = shifted_pixels
         self.background_color = background_color
         return True
 
@@ -140,13 +164,13 @@ class CanvasDocument:
         end_col: int,
         end_row: int,
         force_square: bool,
-        color: QColor,
+        color: ColorValue,
     ) -> bool:
         bounds = self.shape_bounds(start_col, start_row, end_col, end_row, force_square)
         if bounds is None:
             return False
 
-        self._draw_shape(self.image, shape_kind, bounds, color)
+        self._draw_shape(self._pixels, shape_kind, bounds, color)
         return True
 
     def create_shape_preview(
@@ -157,16 +181,13 @@ class CanvasDocument:
         end_col: int,
         end_row: int,
         force_square: bool,
-        color: QColor,
-    ) -> QImage:
-        preview_image = QImage(self.image.size(), QImage.Format.Format_ARGB32)
-        preview_image.fill(QColor("transparent"))
-
+        color: ColorValue,
+    ) -> PixelSnapshot:
+        preview_pixels = [TRANSPARENT_COLOR] * (self.columns * self.rows)
         bounds = self.shape_bounds(start_col, start_row, end_col, end_row, force_square)
         if bounds is not None:
-            self._draw_shape(preview_image, shape_kind, bounds, color)
-
-        return preview_image
+            self._draw_shape(preview_pixels, shape_kind, bounds, color)
+        return tuple(preview_pixels)
 
     def shape_bounds(
         self,
@@ -198,19 +219,18 @@ class CanvasDocument:
 
         return left, top, width, height
 
-    def replace_background(self, new_background_color: QColor) -> bool:
-        if not new_background_color.isValid() or new_background_color == self.background_color:
+    def replace_background(self, new_background_color: ColorValue) -> bool:
+        if new_background_color == self.background_color:
             return False
 
         previous_background_color = self.background_color
         snapshot = self.create_snapshot()
         changed = False
 
-        for row in range(self.rows):
-            for col in range(self.columns):
-                if self.image.pixelColor(col, row) == previous_background_color:
-                    self.image.setPixelColor(col, row, new_background_color)
-                    changed = True
+        for index, pixel in enumerate(self._pixels):
+            if pixel == previous_background_color:
+                self._pixels[index] = new_background_color
+                changed = True
 
         if not changed:
             self.background_color = new_background_color
@@ -229,22 +249,59 @@ class CanvasDocument:
     def contains(self, col: int, row: int) -> bool:
         return 0 <= col < self.columns and 0 <= row < self.rows
 
-    def _traverse_history(self, source_stack: list[QImage], dest_stack: list[QImage]) -> bool:
+    def _traverse_history(self, source_stack: list[PixelSnapshot], dest_stack: list[PixelSnapshot]) -> bool:
         if not source_stack:
             return False
 
-        dest_stack.append(self.image.copy())
-        self.image = source_stack.pop()
-        self.columns = self.image.width()
-        self.rows = self.image.height()
+        dest_stack.append(self.create_snapshot())
+        self._pixels = list(source_stack.pop())
         return True
 
-    def _draw_shape(self, image: QImage, shape_kind: ShapeKind, bounds: ShapeBounds, color: QColor) -> None:
-        left, top, width, height = bounds
-        painter = QPainter(image)
-        painter.setPen(color)
+    def _draw_shape(
+        self,
+        pixels: list[ColorValue],
+        shape_kind: ShapeKind,
+        bounds: ShapeBounds,
+        color: ColorValue,
+    ) -> None:
         if shape_kind == "rect":
-            painter.drawRect(left, top, width, height)
+            self._draw_rect(pixels, bounds, color)
         else:
-            painter.drawEllipse(left, top, width, height)
-        painter.end()
+            self._draw_ellipse(pixels, bounds, color)
+
+    def _draw_rect(self, pixels: list[ColorValue], bounds: ShapeBounds, color: ColorValue) -> None:
+        left, top, width, height = bounds
+        right = left + width - 1
+        bottom = top + height - 1
+
+        for col in range(left, right + 1):
+            self._set_pixel(pixels, col, top, color)
+            self._set_pixel(pixels, col, bottom, color)
+        for row in range(top, bottom + 1):
+            self._set_pixel(pixels, left, row, color)
+            self._set_pixel(pixels, right, row, color)
+
+    def _draw_ellipse(self, pixels: list[ColorValue], bounds: ShapeBounds, color: ColorValue) -> None:
+        left, top, width, height = bounds
+        if width <= 2 or height <= 2:
+            self._draw_rect(pixels, bounds, color)
+            return
+
+        radius_x = (width - 1) / 2
+        radius_y = (height - 1) / 2
+        center_x = left + radius_x
+        center_y = top + radius_y
+        steps = max(12, int(2 * pi * max(radius_x, radius_y) * 2))
+
+        for step in range(steps):
+            angle = 2 * pi * step / steps
+            col = round(center_x + radius_x * cos(angle))
+            row = round(center_y + radius_y * sin(angle))
+            self._set_pixel(pixels, col, row, color)
+
+    def _set_pixel(self, pixels: list[ColorValue], col: int, row: int, color: ColorValue) -> None:
+        if self.contains(col, row):
+            pixels[self._pixel_index(col, row)] = color
+
+    def _pixel_index(self, col: int, row: int) -> int:
+        return row * self.columns + col

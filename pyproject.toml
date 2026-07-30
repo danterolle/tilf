@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tilf"
-version = "0.4"
+version = "0.5"
 description = "Tiny Elf - A minimal pixel art editor"
 requires-python = ">=3.11"
 license = {text = "GPL-3.0-only"}

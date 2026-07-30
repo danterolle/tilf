@@ -1,4 +1,4 @@
-APP_VERSION = "0.4"
+APP_VERSION = "0.5"
 APP_NAME = "Tilf - Pixel Art Editor"
 AUTOSAVE_DIR = "tilf_autosaves"
 HISTORY_LIMIT = 50

@@ -186,11 +186,6 @@ QFrame#updateCard {
     border-radius: 14px;
 }
 
-QFrame#confirmAccent {
-    background-color: #5aafc3;
-    border-radius: 2px;
-}
-
 QLabel#confirmTitle {
     color: #b9f2ff;
     font-size: 18px;

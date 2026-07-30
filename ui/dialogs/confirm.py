@@ -32,10 +32,6 @@ class ConfirmDialog(QDialog):
         card_layout.setContentsMargins(20, 18, 20, 18)
         card_layout.setSpacing(12)
 
-        accent = QFrame()
-        accent.setObjectName("confirmAccent")
-        accent.setFixedHeight(4)
-
         title_label = QLabel(title)
         title_label.setObjectName("confirmTitle")
 
@@ -55,7 +51,6 @@ class ConfirmDialog(QDialog):
                 button.setDefault(True)
             button_layout.addWidget(button)
 
-        card_layout.addWidget(accent)
         card_layout.addWidget(title_label)
         card_layout.addWidget(message_label)
         card_layout.addLayout(button_layout)

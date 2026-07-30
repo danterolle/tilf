@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox, QWidget
 
 from state import AppState
 from ui.canvas import Canvas
+from ui.dialogs.confirm import ask_confirmation
 from ui.dialogs.new_canvas import NewCanvas
 from utils import config
 from utils.image_io import export_image as save_image
@@ -103,14 +104,14 @@ class FileManager:
     def _confirm_discard_if_needed(self) -> bool:
         if not self.app_state.is_dirty:
             return True
-        reply = QMessageBox.question(
+        return ask_confirmation(
             self.parent,
             config.TITLE_UNSAVED,
             config.MSG_DISCARD_CHANGES,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No
+            config.BTN_DISCARD_CHANGES,
+            config.BTN_KEEP_EDITING,
+            destructive=True,
         )
-        return reply == QMessageBox.StandardButton.Yes
 
     def _prompt_save_path_and_options(self) -> tuple[str | None, str | None, bool]:
         path, _ = QFileDialog.getSaveFileName(
@@ -125,13 +126,14 @@ class FileManager:
         file_format = infer_image_format(path)
         is_transparent = False
         if file_format == config.IMAGE_FORMAT_PNG:
-            reply = QMessageBox.question(
+            is_transparent = ask_confirmation(
                 self.parent,
                 config.TITLE_TRANSPARENCY,
                 config.MSG_TRANSPARENCY_PROMPT,
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                config.BTN_KEEP_TRANSPARENCY,
+                config.BTN_FLATTEN_BACKGROUND,
+                default_confirm=True,
             )
-            is_transparent = (reply == QMessageBox.StandardButton.Yes)
 
         return path, file_format, is_transparent
 

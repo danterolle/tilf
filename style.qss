@@ -174,6 +174,28 @@ QFrame#aboutCard {
     border-radius: 14px;
 }
 
+QFrame#confirmCard {
+    background-color: #131c23;
+    border: 1px solid #2a3a44;
+    border-radius: 14px;
+}
+
+QFrame#confirmAccent {
+    background-color: #5aafc3;
+    border-radius: 2px;
+}
+
+QLabel#confirmTitle {
+    color: #b9f2ff;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+QLabel#confirmMessage {
+    color: #88e0f6;
+    font-size: 14px;
+}
+
 QLabel#aboutTitle {
     color: #b9f2ff;
     font-family: "VT323", "JetBrains Mono", monospace;
@@ -302,6 +324,46 @@ QPushButton:disabled {
     color: #44616b;
     background-color: #131c23;
     border-color: #243044;
+}
+
+QPushButton[variant="primary"] {
+    background-color: #5aafc3;
+    color: #071016;
+    border-color: #88e0f6;
+    font-weight: bold;
+}
+
+QPushButton[variant="secondary"] {
+    background-color: #162029;
+    color: #88e0f6;
+    border-color: #2a3a44;
+}
+
+QPushButton[variant="danger"] {
+    background-color: #7f1d1d;
+    color: #fee2e2;
+    border-color: #ef4444;
+    font-weight: bold;
+}
+
+QPushButton[variant="primary"]:hover {
+    background-color: #88e0f6;
+}
+
+QPushButton[variant="secondary"]:hover {
+    background-color: #1b333d;
+    border-color: #5aafc3;
+    color: #b9f2ff;
+}
+
+QPushButton[variant="danger"]:hover {
+    background-color: #991b1b;
+}
+
+QPushButton[variant="primary"]:pressed,
+QPushButton[variant="secondary"]:pressed {
+    background-color: #5aafc3;
+    color: #071016;
 }
 
 QComboBox::drop-down {

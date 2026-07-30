@@ -12,7 +12,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QMainWindow,
-    QMessageBox,
     QPushButton,
     QScrollArea,
     QSlider,
@@ -25,6 +24,7 @@ from file_manager import FileManager
 from state import AppState
 from ui.canvas import Canvas
 from ui.dialogs.about import About
+from ui.dialogs.confirm import ask_choice, ask_confirmation
 from ui.dialogs.multiple_choice import MultipleChoice
 from ui.toolbar import Toolbar
 from ui.widgets.color_swatch import ColorSwatchButton
@@ -233,11 +233,13 @@ class TilfEditor(QMainWindow):
             self.canvas.update()
 
     def clear_canvas(self) -> None:
-        reply = QMessageBox.question(
+        should_clear = ask_confirmation(
             self, config.TITLE_CLEAR_CANVAS, config.MSG_CLEAR_CONFIRM,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            config.BTN_CLEAR,
+            config.BTN_CANCEL,
+            destructive=True,
         )
-        if reply == QMessageBox.StandardButton.Yes:
+        if should_clear:
             return self.canvas.clear_canvas()
         return None
 
@@ -336,18 +338,21 @@ class TilfEditor(QMainWindow):
             # Create a recovery copy before asking, so Cancel also preserves unsaved work.
             self.file_manager.autosave_on_exit()
 
-            reply = QMessageBox.question(
+            reply = ask_choice(
                 self, config.TITLE_UNSAVED, config.MSG_SAVE_BEFORE_QUIT,
-                QMessageBox.StandardButton.Save |
-                QMessageBox.StandardButton.Discard |
-                QMessageBox.StandardButton.Cancel
+                (
+                    (config.BTN_CANCEL, "cancel", "secondary"),
+                    (config.BTN_DISCARD, "discard", "danger"),
+                    (config.BTN_SAVE, "save", "primary"),
+                ),
+                "save",
             )
-            if reply == QMessageBox.StandardButton.Save:
+            if reply == "save":
                 if self.file_manager.save_file():
                     return event.accept()
                 else:
                     return event.ignore()
-            elif reply == QMessageBox.StandardButton.Cancel:
+            elif reply == "cancel" or reply is None:
                 return event.ignore()
             else:
                 return event.accept()

@@ -110,5 +110,11 @@ TOOLBAR_ACTIONS: tuple[ToolbarAction, ...] = (
     ),
     ToolbarAction(text="Grid color", icon="assets/icons/grid_color.png", handler_name="choose_grid_color"),
     ToolbarAction(separator=True),
+    ToolbarAction(
+        text="Update",
+        icon="assets/icons/update.png",
+        handler_name="check_for_updates",
+        tooltip="Check for updates",
+    ),
     ToolbarAction(text="About", icon="assets/logo.png", handler_name="about", tooltip="About Tilf"),
 )

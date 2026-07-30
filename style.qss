@@ -180,6 +180,12 @@ QFrame#confirmCard {
     border-radius: 14px;
 }
 
+QFrame#updateCard {
+    background-color: #131c23;
+    border: 1px solid #2a3a44;
+    border-radius: 14px;
+}
+
 QFrame#confirmAccent {
     background-color: #5aafc3;
     border-radius: 2px;
@@ -192,6 +198,17 @@ QLabel#confirmTitle {
 }
 
 QLabel#confirmMessage {
+    color: #88e0f6;
+    font-size: 14px;
+}
+
+QLabel#updateTitle {
+    color: #b9f2ff;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+QLabel#updateMessage {
     color: #88e0f6;
     font-size: 14px;
 }

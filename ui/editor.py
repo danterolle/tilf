@@ -26,10 +26,12 @@ from ui.canvas import Canvas
 from ui.dialogs.about import About
 from ui.dialogs.confirm import ask_choice, ask_confirmation
 from ui.dialogs.multiple_choice import MultipleChoice
+from ui.dialogs.update import UpdateDialog
 from ui.toolbar import Toolbar
 from ui.widgets.color_swatch import ColorSwatchButton
 from utils import config
 from utils.log import get_logger
+from utils.update_checker import UpdateCheckError, check_latest_release
 
 
 class TilfEditor(QMainWindow):
@@ -112,6 +114,7 @@ class TilfEditor(QMainWindow):
         view_menu.addAction(config.ACTION_GRID_COLOR, self.choose_grid_color)
 
         help_menu = menu_bar.addMenu(config.MENU_HELP)
+        help_menu.addAction(config.ACTION_CHECK_UPDATES, self.check_for_updates)
         help_menu.addAction(config.ACTION_ABOUT, self.about)
 
     def _setup_toolbar(self) -> None:
@@ -127,6 +130,7 @@ class TilfEditor(QMainWindow):
             "toggle_grid": self.toggle_grid,
             "choose_grid_color": self.choose_grid_color,
             "shift_canvas": self.shift_canvas,
+            "check_for_updates": self.check_for_updates,
             "about": self.about,
         }
         self.toolbar_builder = Toolbar(self, self.app_state, handlers)
@@ -262,6 +266,19 @@ class TilfEditor(QMainWindow):
 
     def about(self) -> int:
         return About(self).exec()
+
+    def check_for_updates(self) -> int:
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        try:
+            update_status = check_latest_release()
+        except UpdateCheckError as error:
+            update_dialog = UpdateDialog(self, error=str(error))
+        else:
+            update_dialog = UpdateDialog(self, status=update_status)
+        finally:
+            QApplication.restoreOverrideCursor()
+
+        return update_dialog.exec()
 
     def _update_window_title(self) -> None:
         filename = os.path.basename(

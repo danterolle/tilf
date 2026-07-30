@@ -24,12 +24,12 @@ It runs on Windows, MacOS and GNU/Linux.
 
 Download the latest release from the [releases page](https://github.com/danterolle/tilf/releases).
 
-**Windows 11** -> [Download](https://github.com/danterolle/tilf/releases/download/v0.4/tilf_0.4-Windows.exe)
-![Tilf on Windows](./screenshots/windows.png "Windows")
-**MacOS 15.6** -> [Download](https://github.com/danterolle/tilf/releases/download/v0.4/tilf_0.4-MacOS.zip)
-![Tilf on MacOS](./screenshots/macos.png "MacOS")
-**GNU/Linux (ParrotOS 6.4)** -> [Download](https://github.com/danterolle/tilf/releases/download/v0.4/tilf_0.4-Linux.tar.xz)
-![Tilf on GNU/Linux](./screenshots/linux.png "GNU/Linux")
+![Tilf editor preview](./screenshots/hello.png "Tilf editor preview")
+
+Downloads:
+[Windows](https://github.com/danterolle/tilf/releases/download/v0.4/tilf_0.4-Windows.exe) ·
+[MacOS](https://github.com/danterolle/tilf/releases/download/v0.4/tilf_0.4-MacOS.zip) ·
+[GNU/Linux](https://github.com/danterolle/tilf/releases/download/v0.4/tilf_0.4-Linux.tar.xz)
 
 I’m aware that the code quality isn’t great.
 I didn’t prioritize it when writing this.

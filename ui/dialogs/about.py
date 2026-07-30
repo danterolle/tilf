@@ -1,8 +1,8 @@
 import os
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QVBoxLayout, QWidget
+from PySide6.QtCore import Qt, QUrl
+from PySide6.QtGui import QDesktopServices, QPixmap
+from PySide6.QtWidgets import QDialog, QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from utils import config
 from utils.resource_path import get_resource_path
@@ -13,10 +13,18 @@ class About(QDialog):
         super().__init__(parent)
         self.setWindowTitle(config.TITLE_ABOUT)
         self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowCloseButtonHint)
+        self.setMinimumWidth(420)
 
         layout = QVBoxLayout(self)
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.setSpacing(10)
+        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setSpacing(0)
+
+        card = QFrame()
+        card.setObjectName("aboutCard")
+        card_layout = QVBoxLayout(card)
+        card_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        card_layout.setContentsMargins(24, 24, 24, 20)
+        card_layout.setSpacing(12)
 
         icon_path = get_resource_path(config.LOGO_RESOURCE)
         icon_label = QLabel()
@@ -25,8 +33,8 @@ class About(QDialog):
             pixmap = QPixmap(icon_path)
             icon_label.setPixmap(
                 pixmap.scaled(
-                    80,
-                    80,
+                    112,
+                    112,
                     Qt.AspectRatioMode.KeepAspectRatio,
                     Qt.TransformationMode.SmoothTransformation
                 )
@@ -38,26 +46,42 @@ class About(QDialog):
 
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        info_label = QLabel(
-            f"<br>Version {config.APP_VERSION} - under GPL v3 License<br>"
-            "<br>Tilf (Tiny Elf) is a simple pixel art editor for creating, drawing and modifying images with "
-            "pixel-level precision.<br>"
-            "<br>It features essential tools like a pencil, fill bucket, and shapes, along with a grid system to "
-            "easily create sprites and small tiles.<br>"
-            '<br><a href="https://github.com/danterolle/tilf">PRs are welcome.</a><br>'
-            "<br>Thank you for using this tool!<br>"
-            "<br>Created by Dario 'danterolle' Camonita<br>"
-            "<br>Email: danterolle@catania.linux.it<br>"
+        title_label = QLabel("Tilf")
+        title_label.setObjectName("aboutTitle")
+        title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        version_label = QLabel(f"v{config.APP_VERSION} · GPL v3")
+        version_label.setObjectName("aboutVersion")
+        version_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        description_label = QLabel(
+            "Tiny Elf is a focused pixel art editor for sprites, icons and compact 2D assets."
         )
-        info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        info_label.setOpenExternalLinks(True)
-        info_label.setWordWrap(True)
+        description_label.setObjectName("aboutDescription")
+        description_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        description_label.setWordWrap(True)
+
+        author_label = QLabel("Created by Dario 'danterolle' Camonita")
+        author_label.setObjectName("aboutMeta")
+        author_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         button_layout = QHBoxLayout()
-        button_layout.addStretch()
+        button_layout.setSpacing(8)
         button_layout.addStretch()
 
-        layout.addWidget(icon_label)
-        layout.addWidget(info_label)
-        layout.addStretch()
-        layout.addLayout(button_layout)
+        github_button = QPushButton(config.BTN_GITHUB)
+        github_button.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(config.PROJECT_URL)))
+        email_button = QPushButton(config.BTN_EMAIL)
+        email_button.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(config.PROJECT_EMAIL_URL)))
+
+        button_layout.addWidget(github_button)
+        button_layout.addWidget(email_button)
+        button_layout.addStretch()
+
+        card_layout.addWidget(icon_label)
+        card_layout.addWidget(title_label)
+        card_layout.addWidget(version_label)
+        card_layout.addWidget(description_label)
+        card_layout.addWidget(author_label)
+        card_layout.addLayout(button_layout)
+        layout.addWidget(card)

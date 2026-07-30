@@ -168,6 +168,36 @@ QLabel#missingIconLabel {
     color: #88e0f6;
 }
 
+QFrame#aboutCard {
+    background-color: #131c23;
+    border: 1px solid #2a3a44;
+    border-radius: 14px;
+}
+
+QLabel#aboutTitle {
+    color: #b9f2ff;
+    font-family: "VT323", "JetBrains Mono", monospace;
+    font-size: 36px;
+    font-weight: bold;
+}
+
+QLabel#aboutVersion {
+    color: #5aafc3;
+    font-family: "JetBrains Mono", "SF Mono", monospace;
+    font-size: 13px;
+}
+
+QLabel#aboutDescription {
+    color: #88e0f6;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+QLabel#aboutMeta {
+    color: #6aaebd;
+    font-size: 12px;
+}
+
 QGroupBox {
     background-color: #131c23;
     border: 1px solid #2a3a44;

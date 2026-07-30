@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox, QWidget
 
 from state import AppState
 from ui.canvas import Canvas
-from ui.dialogs.confirm import ask_confirmation
+from ui.dialogs.confirm import ask_choice, ask_confirmation
 from ui.dialogs.new_canvas import NewCanvas
 from utils import config
 from utils.image_io import export_image as save_image
@@ -85,8 +85,7 @@ class FileManager:
             return
 
         try:
-            script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-            autosaves_dir = os.path.join(script_dir, config.AUTOSAVE_DIR)
+            autosaves_dir = self._autosaves_dir()
             os.makedirs(autosaves_dir, exist_ok=True)
             timestamp = time.strftime(config.AUTOSAVE_TIMESTAMP_FORMAT)
             basename = os.path.splitext(os.path.basename(self.app_state.current_file_path or ""))[0] or "sprite"
@@ -100,6 +99,34 @@ class FileManager:
                 )
         except OSError as error:
             get_logger().error(config.MSG_AUTOSAVE_ERROR_FMT.format(error=error))
+
+    def prompt_recover_autosave(self) -> None:
+        autosave_path = self._latest_autosave_path()
+        if autosave_path is None:
+            return
+
+        reply = ask_choice(
+            self.parent,
+            config.TITLE_RECOVERY,
+            config.MSG_RECOVERY_AVAILABLE_FMT.format(filename=os.path.basename(autosave_path)),
+            (
+                (config.BTN_IGNORE, "ignore", "secondary"),
+                (config.BTN_OPEN_RECOVERY, "open", "primary"),
+            ),
+            "open",
+        )
+        if reply == "open":
+            self.recover_autosave(autosave_path)
+
+    def recover_autosave(self, path: str) -> None:
+        image = QImage(path)
+        if image.isNull():
+            QMessageBox.warning(self.parent, config.TITLE_ERROR, config.MSG_FAILED_LOAD)
+            return
+
+        self.canvas.load_image(image)
+        self.app_state.set_file_path(None)
+        self.app_state.set_dirty(True)
 
     def _confirm_discard_if_needed(self) -> bool:
         if not self.app_state.is_dirty:
@@ -143,3 +170,24 @@ class FileManager:
             config.TITLE_ERROR,
             config.MSG_FAILED_SAVE_FMT.format(path=path),
         )
+
+    def _autosaves_dir(self) -> str:
+        script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+        return os.path.join(script_dir, config.AUTOSAVE_DIR)
+
+    def _latest_autosave_path(self) -> str | None:
+        autosaves_dir = self._autosaves_dir()
+        try:
+            candidates = [
+                os.path.join(autosaves_dir, filename)
+                for filename in os.listdir(autosaves_dir)
+                if filename.lower().endswith(".png")
+                and os.path.isfile(os.path.join(autosaves_dir, filename))
+            ]
+        except FileNotFoundError:
+            return None
+        except OSError as error:
+            get_logger().error(config.MSG_AUTOSAVE_ERROR_FMT.format(error=error))
+            return None
+
+        return max(candidates, key=os.path.getmtime, default=None)

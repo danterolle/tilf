@@ -4,15 +4,16 @@ from PySide6.QtWidgets import QPushButton
 
 
 class ColorSwatchButton(QPushButton):
-    def __init__(self) -> None:
+    def __init__(self, show_text: bool = True) -> None:
         super().__init__()
         self._color = QColor("transparent")
-        self.setMinimumHeight(32)
+        self._show_text = show_text
+        self.setMinimumHeight(38)
 
     def set_color(self, color: QColor) -> None:
         self._color = QColor(color)
         color_name = self._color.name(QColor.NameFormat.HexArgb)
-        self.setText(color_name)
+        self.setText(color_name if self._show_text else "")
         self.setToolTip(color_name)
         self.update()
 
@@ -34,5 +35,6 @@ class ColorSwatchButton(QPushButton):
             if self._color.lightness() < 150 or self._color.alpha() < 128
             else QColor("#111827")
         )
-        painter.setPen(text_color)
-        painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, self.text())
+        if self._show_text:
+            painter.setPen(text_color)
+            painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, self.text())

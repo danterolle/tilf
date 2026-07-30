@@ -28,7 +28,7 @@ from ui.dialogs.confirm import ask_choice, ask_confirmation
 from ui.dialogs.multiple_choice import MultipleChoice
 from ui.dialogs.update import UpdateDialog
 from ui.toolbar import Toolbar
-from ui.widgets.color_swatch import ColorSwatchButton
+from ui.widgets.color_palette import ColorPalette
 from utils import config
 from utils.log import get_logger
 from utils.update_checker import UpdateCheckError, check_latest_release
@@ -56,10 +56,11 @@ class TilfEditor(QMainWindow):
 
         self.app_state.set_file_path(None)
         self.app_state.set_tool(config.ToolType.PENCIL)
+        QTimer.singleShot(0, self.file_manager.prompt_recover_autosave)
 
     def _setup_central_widget(self) -> None:
         scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidgetResizable(False)
         scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
         scroll_area.setWidget(self.canvas)
         scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
@@ -139,10 +140,12 @@ class TilfEditor(QMainWindow):
         self.redo_toolbar_action = self.toolbar_builder.action_for_handler("redo")
 
     def _setup_preview_dock(self) -> None:
-        self.primary_color_button = ColorSwatchButton()
-        self.primary_color_button.clicked.connect(self.choose_primary_color)
-        self.secondary_color_button = ColorSwatchButton()
-        self.secondary_color_button.clicked.connect(self.choose_secondary_color)
+        self.color_palette = ColorPalette()
+        self.color_palette.primary_color_requested.connect(self.choose_primary_color)
+        self.color_palette.secondary_color_requested.connect(self.choose_secondary_color)
+        self.color_palette.recent_color_selected.connect(self.app_state.set_primary_color)
+        self.color_palette.reset_requested.connect(self.reset_colors)
+        self.color_palette.swap_requested.connect(self.swap_colors)
         self.canvas_info_label = QLabel()
         self.zoom_value_label = QLabel()
 
@@ -162,12 +165,17 @@ class TilfEditor(QMainWindow):
         layout.addWidget(self._create_canvas_group())
         layout.addStretch()
 
+        inspector_area = QScrollArea()
+        inspector_area.setWidgetResizable(True)
+        inspector_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        inspector_area.setWidget(container)
+
         dock = QDockWidget(config.LABEL_INSPECTOR, self)
-        dock.setWidget(container)
+        dock.setWidget(inspector_area)
         dock.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
-        self._update_color_swatch(self.primary_color_button, self.app_state.primary_color)
-        self._update_color_swatch(self.secondary_color_button, self.app_state.secondary_color)
+        self._on_primary_color_changed(self.app_state.primary_color)
+        self._on_secondary_color_changed(self.app_state.secondary_color)
         self._update_canvas_info()
         self._update_zoom_label(self.canvas.cell_size)
 
@@ -179,9 +187,8 @@ class TilfEditor(QMainWindow):
 
     def _create_color_group(self) -> QGroupBox:
         group = QGroupBox(config.LABEL_COLORS)
-        layout = QFormLayout(group)
-        layout.addRow(config.LABEL_PRIMARY_COLOR, self.primary_color_button)
-        layout.addRow(config.LABEL_BACKGROUND_COLOR, self.secondary_color_button)
+        layout = QVBoxLayout(group)
+        layout.addWidget(self.color_palette)
         return group
 
     def _create_canvas_group(self) -> QGroupBox:
@@ -200,10 +207,10 @@ class TilfEditor(QMainWindow):
         self.app_state.image_changed.connect(self._schedule_preview_refresh)
         self.app_state.image_changed.connect(self._update_canvas_info)
         self.app_state.primary_color_changed.connect(
-            lambda color: self._update_color_swatch(self.primary_color_button, color)
+            self._on_primary_color_changed
         )
         self.app_state.secondary_color_changed.connect(
-            lambda color: self._update_color_swatch(self.secondary_color_button, color)
+            self._on_secondary_color_changed
         )
 
         self.canvas.pixel_hovered.connect(self._update_status_bar)
@@ -235,6 +242,16 @@ class TilfEditor(QMainWindow):
         if color.isValid():
             self.canvas.grid_color = color
             self.canvas.update()
+
+    def reset_colors(self) -> None:
+        self.app_state.set_primary_color(config.DEFAULT_PRIMARY_COLOR)
+        self.app_state.set_secondary_color(config.DEFAULT_SECONDARY_COLOR)
+
+    def swap_colors(self) -> None:
+        primary_color = QColor(self.app_state.primary_color)
+        secondary_color = QColor(self.app_state.secondary_color)
+        self.app_state.set_primary_color(secondary_color)
+        self.app_state.set_secondary_color(primary_color)
 
     def clear_canvas(self) -> None:
         should_clear = ask_confirmation(
@@ -303,8 +320,13 @@ class TilfEditor(QMainWindow):
     def _update_zoom_label(self, zoom: int) -> None:
         self.zoom_value_label.setText(f"{zoom}x")
 
-    def _update_color_swatch(self, button: ColorSwatchButton, color: QColor) -> None:
-        button.set_color(color)
+    def _on_primary_color_changed(self, color: QColor) -> None:
+        self.color_palette.set_primary_color(color)
+        self.color_palette.remember_color(color)
+
+    def _on_secondary_color_changed(self, color: QColor) -> None:
+        self.color_palette.set_secondary_color(color)
+        self.color_palette.remember_color(color)
 
     def _update_history_actions(self, can_undo: bool, can_redo: bool) -> None:
         if self.undo_menu_action is not None:

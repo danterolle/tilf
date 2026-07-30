@@ -3,9 +3,7 @@ from utils.app_config import (  # noqa: F401
     APP_VERSION,
     AUTOSAVE_DIR,
     HISTORY_LIMIT,
-    LATEST_RELEASE_API_URL,
     MACOS_PINCH_ZOOM_SENSITIVITY,
-    PROJECT_REPOSITORY,
     RELEASES_URL,
 )
 from utils.canvas_config import (  # noqa: F401

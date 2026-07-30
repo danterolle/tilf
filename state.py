@@ -33,9 +33,9 @@ class AppState(QObject):
     def current_file_path(self) -> str | None:
         return self._current_file_path
 
-    def set_file_path(self, path: str | None, mark_dirty: bool = False) -> None:
+    def set_file_path(self, path: str | None) -> None:
         self._current_file_path = path
-        self.set_dirty(mark_dirty)
+        self.set_dirty(False)
         self.file_path_changed.emit(path or config.UNTITLED_NAME)
 
     @property

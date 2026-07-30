@@ -247,8 +247,10 @@ pyinstaller --name tilf --onefile --windowed --icon assets/icon.icns --add-data 
   - Undo: Ctrl+Z
   - Redo: Ctrl+Y
 - View:
-  - Zoom: mouse wheel, macOS pinch gesture, or Ctrl/Cmd + scroll
-  - Pan: trackpad/touchpad scroll
+  - Fit to window: Ctrl+0
+  - 100% zoom: Ctrl+1
+  - Zoom: mouse wheel, macOS pinch gesture, Ctrl/Cmd + scroll or View presets
+  - Pan: trackpad/touchpad scroll or middle-mouse drag
 - Tools:
   - Pencil: B
   - Eraser: E

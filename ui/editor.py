@@ -1,11 +1,12 @@
 import os
 from collections.abc import Callable
 
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import QEvent, QObject, Qt, QTimer
 from PySide6.QtGui import QCloseEvent, QColor, QDragEnterEvent, QDropEvent, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
     QColorDialog,
+    QComboBox,
     QDockWidget,
     QFormLayout,
     QGroupBox,
@@ -27,6 +28,7 @@ from ui.dialogs.about import About
 from ui.dialogs.confirm import ask_choice, ask_confirmation
 from ui.dialogs.multiple_choice import MultipleChoice
 from ui.dialogs.update import UpdateDialog
+from ui.navigation import CanvasPanController
 from ui.toolbar import Toolbar
 from ui.widgets.color_palette import ColorPalette
 from utils import config
@@ -46,6 +48,8 @@ class TilfEditor(QMainWindow):
         self.canvas = Canvas(self.app_state)
         self.file_manager = FileManager(self, self.app_state, self.canvas)
         self._preview_dirty = False
+        self._fit_zoom_active = False
+        self._applying_fit_zoom = False
 
         self._setup_central_widget()
         self._setup_status_bar()
@@ -59,13 +63,15 @@ class TilfEditor(QMainWindow):
         QTimer.singleShot(0, self.file_manager.prompt_recover_autosave)
 
     def _setup_central_widget(self) -> None:
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(False)
-        scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        scroll_area.setWidget(self.canvas)
-        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.setCentralWidget(scroll_area)
+        self.canvas_scroll_area = QScrollArea()
+        self.canvas_scroll_area.setWidgetResizable(False)
+        self.canvas_scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.canvas_scroll_area.setWidget(self.canvas)
+        self.canvas_scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.canvas_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.canvas_scroll_area.viewport().installEventFilter(self)
+        self.pan_controller = CanvasPanController(self.canvas_scroll_area, self.canvas)
+        self.setCentralWidget(self.canvas_scroll_area)
 
     def _setup_status_bar(self) -> None:
         self.status_bar = QStatusBar(self)
@@ -77,22 +83,30 @@ class TilfEditor(QMainWindow):
         zoom_layout.setSpacing(5)
 
         self.zoom_slider = QSlider(Qt.Orientation.Horizontal)
-        self.zoom_slider.setMinimum(1)
-        self.zoom_slider.setMaximum(50)
+        self.zoom_slider.setMinimum(config.MIN_ZOOM)
+        self.zoom_slider.setMaximum(config.MAX_ZOOM)
         self.zoom_slider.setValue(config.DEFAULT_ZOOM)
         self.zoom_slider.setFixedWidth(150)
+
+        self.zoom_preset_combo = QComboBox()
+        self.zoom_preset_combo.setFixedWidth(105)
+        self.zoom_preset_combo.addItem("Custom", None)
+        self.zoom_preset_combo.addItem(config.ACTION_FIT_TO_WINDOW, "fit")
+        for zoom in config.ZOOM_PRESETS:
+            self.zoom_preset_combo.addItem(self._zoom_percent_label(zoom), zoom)
 
         reset_button = QPushButton(config.BTN_RESET_ZOOM)
         reset_button.setFixedWidth(100)
         reset_button.setToolTip(config.RESET_ZOOM_TOOLTIP_FMT.format(zoom=config.DEFAULT_ZOOM))
 
         zoom_layout.addWidget(self.zoom_slider)
+        zoom_layout.addWidget(self.zoom_preset_combo)
         zoom_layout.addWidget(reset_button)
         self.status_bar.addPermanentWidget(zoom_widget)
 
-        self.zoom_slider.valueChanged.connect(self.canvas.set_cell_size)
-        self.canvas.zoom_changed.connect(self.zoom_slider.setValue)
-        reset_button.clicked.connect(lambda: self.canvas.set_cell_size(config.DEFAULT_ZOOM))
+        self.zoom_slider.valueChanged.connect(self._set_zoom_from_slider)
+        self.zoom_preset_combo.activated.connect(self._apply_zoom_combo_selection)
+        reset_button.clicked.connect(self.reset_zoom)
 
     def _setup_menu_bar(self) -> None:
         menu_bar = self.menuBar()
@@ -111,7 +125,18 @@ class TilfEditor(QMainWindow):
         edit_menu.addAction(config.ACTION_CLEAR_CANVAS, self.clear_canvas)
 
         view_menu = menu_bar.addMenu(config.MENU_VIEW)
-        view_menu.addAction(config.ACTION_RESET_ZOOM, lambda: self.canvas.set_cell_size(config.DEFAULT_ZOOM))
+        view_menu.addAction(config.ACTION_FIT_TO_WINDOW, self.fit_canvas_to_window, "Ctrl+0")
+        view_menu.addAction(config.ACTION_ACTUAL_SIZE, self.set_actual_size, "Ctrl+1")
+        view_menu.addAction(config.ACTION_ZOOM_IN, self.zoom_in, "Ctrl++")
+        view_menu.addAction(config.ACTION_ZOOM_OUT, self.zoom_out, "Ctrl+-")
+        view_menu.addAction(config.ACTION_RESET_ZOOM, self.reset_zoom)
+        preset_menu = view_menu.addMenu(config.MENU_ZOOM_PRESETS)
+        for zoom in config.ZOOM_PRESETS:
+            preset_menu.addAction(
+                self._zoom_percent_label(zoom),
+                lambda checked=False, selected_zoom=zoom: self.set_zoom(selected_zoom),
+            )
+        view_menu.addSeparator()
         view_menu.addAction(config.ACTION_GRID_COLOR, self.choose_grid_color)
 
         help_menu = menu_bar.addMenu(config.MENU_HELP)
@@ -177,7 +202,7 @@ class TilfEditor(QMainWindow):
         self._on_primary_color_changed(self.app_state.primary_color)
         self._on_secondary_color_changed(self.app_state.secondary_color)
         self._update_canvas_info()
-        self._update_zoom_label(self.canvas.cell_size)
+        self._sync_zoom_controls(self.canvas.cell_size)
 
     def _create_preview_group(self) -> QGroupBox:
         group = QGroupBox(config.LABEL_PREVIEW)
@@ -214,7 +239,7 @@ class TilfEditor(QMainWindow):
         )
 
         self.canvas.pixel_hovered.connect(self._update_status_bar)
-        self.canvas.zoom_changed.connect(self._update_zoom_label)
+        self.canvas.zoom_changed.connect(self._on_canvas_zoom_changed)
         self.canvas.history_changed.connect(self._update_history_actions)
         self.canvas.zoom_changed.connect(
             lambda z: self.status_bar.showMessage(
@@ -242,6 +267,33 @@ class TilfEditor(QMainWindow):
         if color.isValid():
             self.canvas.grid_color = color
             self.canvas.update()
+
+    def fit_canvas_to_window(self) -> None:
+        viewport_size = self.canvas_scroll_area.viewport().size()
+        width_zoom = max(config.MIN_ZOOM, (viewport_size.width() - 2) // max(1, self.canvas.columns))
+        height_zoom = max(config.MIN_ZOOM, (viewport_size.height() - 2) // max(1, self.canvas.rows))
+        self._fit_zoom_active = True
+        self._applying_fit_zoom = True
+        self.canvas.set_cell_size(min(config.MAX_ZOOM, width_zoom, height_zoom))
+        self._applying_fit_zoom = False
+        self._sync_zoom_controls(self.canvas.cell_size)
+
+    def set_actual_size(self) -> None:
+        self.set_zoom(config.MIN_ZOOM)
+
+    def reset_zoom(self) -> None:
+        self.set_zoom(config.DEFAULT_ZOOM)
+
+    def set_zoom(self, zoom: int) -> None:
+        self._fit_zoom_active = False
+        self.canvas.set_cell_size(zoom)
+        self._sync_zoom_controls(self.canvas.cell_size)
+
+    def zoom_in(self) -> None:
+        self.set_zoom(self.canvas.cell_size + 1)
+
+    def zoom_out(self) -> None:
+        self.set_zoom(self.canvas.cell_size - 1)
 
     def reset_colors(self) -> None:
         self.app_state.set_primary_color(config.DEFAULT_PRIMARY_COLOR)
@@ -320,6 +372,43 @@ class TilfEditor(QMainWindow):
     def _update_zoom_label(self, zoom: int) -> None:
         self.zoom_value_label.setText(f"{zoom}x")
 
+    def _on_canvas_zoom_changed(self, zoom: int) -> None:
+        if self._fit_zoom_active and not self._applying_fit_zoom:
+            self._fit_zoom_active = False
+        self._sync_zoom_controls(zoom)
+
+    def _set_zoom_from_slider(self, zoom: int) -> None:
+        self.set_zoom(zoom)
+
+    def _apply_zoom_combo_selection(self, index: int) -> None:
+        data = self.zoom_preset_combo.itemData(index)
+        if data == "fit":
+            self.fit_canvas_to_window()
+        elif isinstance(data, int):
+            self.set_zoom(data)
+
+    def _sync_zoom_controls(self, zoom: int) -> None:
+        self.zoom_slider.blockSignals(True)
+        self.zoom_slider.setValue(zoom)
+        self.zoom_slider.blockSignals(False)
+        self._sync_zoom_combo(zoom)
+        self._update_zoom_label(zoom)
+
+    def _sync_zoom_combo(self, zoom: int) -> None:
+        self.zoom_preset_combo.blockSignals(True)
+        selected_index = 0
+        if self._fit_zoom_active:
+            selected_index = self.zoom_preset_combo.findData("fit")
+        else:
+            preset_index = self.zoom_preset_combo.findData(zoom)
+            if preset_index >= 0:
+                selected_index = preset_index
+        self.zoom_preset_combo.setCurrentIndex(selected_index)
+        self.zoom_preset_combo.blockSignals(False)
+
+    def _zoom_percent_label(self, zoom: int) -> str:
+        return f"{zoom * 100}%"
+
     def _on_primary_color_changed(self, color: QColor) -> None:
         self.color_palette.set_primary_color(color)
         self.color_palette.remember_color(color)
@@ -397,3 +486,12 @@ class TilfEditor(QMainWindow):
                 return event.accept()
         else:
             return event.accept()
+
+    def eventFilter(self, watched: QObject, event: QEvent) -> bool:
+        if (
+            watched is self.canvas_scroll_area.viewport()
+            and event.type() == QEvent.Type.Resize
+            and self._fit_zoom_active
+        ):
+            QTimer.singleShot(0, self.fit_canvas_to_window)
+        return super().eventFilter(watched, event)

@@ -257,7 +257,7 @@ class Canvas(QWidget):
         self.history_changed.emit(self.document.can_undo, self.document.can_redo)
 
     def set_cell_size(self, size: int) -> None:
-        size = max(1, min(50, size))
+        size = max(config.MIN_ZOOM, min(config.MAX_ZOOM, size))
         if size != self.cell_size:
             self.cell_size = size
             self._update_size()

@@ -23,10 +23,13 @@ from utils.canvas_config import (  # noqa: F401
     MAX_TILE_COLS,
     MAX_TILE_ROWS,
     MAX_TILE_SIZE,
+    MAX_ZOOM,
     MIN_CANVAS_SIZE,
     MIN_TILE_SIZE,
+    MIN_ZOOM,
     SHIFT_OFFSETS,
     SHIFT_OPTIONS,
+    ZOOM_PRESETS,
 )
 from utils.file_config import (  # noqa: F401
     AUTOSAVE_TIMESTAMP_FORMAT,
@@ -49,8 +52,10 @@ from utils.file_config import (  # noqa: F401
 from utils.toolbar_config import TOOLBAR_ACTIONS, TOOLS, ToolType  # noqa: F401
 from utils.ui_text import (  # noqa: F401
     ACTION_ABOUT,
+    ACTION_ACTUAL_SIZE,
     ACTION_CHECK_UPDATES,
     ACTION_CLEAR_CANVAS,
+    ACTION_FIT_TO_WINDOW,
     ACTION_GRID_COLOR,
     ACTION_NEW,
     ACTION_OPEN,
@@ -59,6 +64,8 @@ from utils.ui_text import (  # noqa: F401
     ACTION_RESET_ZOOM,
     ACTION_SAVE,
     ACTION_UNDO,
+    ACTION_ZOOM_IN,
+    ACTION_ZOOM_OUT,
     BTN_CANCEL,
     BTN_CLEAR,
     BTN_DISCARD,
@@ -99,6 +106,7 @@ from utils.ui_text import (  # noqa: F401
     MENU_FILE,
     MENU_HELP,
     MENU_VIEW,
+    MENU_ZOOM_PRESETS,
     MSG_AUTOSAVE_ERROR_FMT,
     MSG_AUTOSAVE_SUCCESS_FMT,
     MSG_CLEAR_CONFIRM,

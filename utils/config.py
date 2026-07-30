@@ -40,6 +40,8 @@ from utils.file_config import (  # noqa: F401
     LOGO_RESOURCE,
     OPEN_FILE_FILTER,
     SAVE_FILE_FILTER,
+    SPINBOX_DOWN_ICON,
+    SPINBOX_UP_ICON,
     STYLESHEET_FILENAME,
     SUPPORTED_EXTENSIONS,
 )

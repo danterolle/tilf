@@ -29,7 +29,10 @@ def main() -> None:
     stylesheet_path = get_resource_path(config.STYLESHEET_FILENAME)
     try:
         with open(stylesheet_path, "r", encoding="utf-8") as f:
-            app.setStyleSheet(f.read())
+            stylesheet = f.read()
+        stylesheet = stylesheet.replace("__SPINBOX_UP_ICON__", _stylesheet_url(config.SPINBOX_UP_ICON))
+        stylesheet = stylesheet.replace("__SPINBOX_DOWN_ICON__", _stylesheet_url(config.SPINBOX_DOWN_ICON))
+        app.setStyleSheet(stylesheet)
         logger.info(config.MSG_STYLESHEET_LOADED_FMT.format(path=stylesheet_path))
     except FileNotFoundError:
         logger.warning(config.MSG_STYLESHEET_MISSING_FMT.format(path=stylesheet_path))
@@ -40,6 +43,10 @@ def main() -> None:
     window.show()
 
     sys.exit(app.exec())
+
+
+def _stylesheet_url(relative_path: str) -> str:
+    return get_resource_path(relative_path).replace("\\", "/")
 
 
 if __name__ == "__main__":

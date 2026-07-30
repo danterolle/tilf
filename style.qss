@@ -197,6 +197,57 @@ QPushButton {
     min-height: 24px;
 }
 
+QSpinBox {
+    padding-right: 34px;
+}
+
+QSpinBox::up-button,
+QSpinBox::down-button {
+    subcontrol-origin: border;
+    width: 24px;
+    background-color: #243044;
+    border-left: 1px solid #334155;
+}
+
+QSpinBox::up-button {
+    subcontrol-position: top right;
+    border-top-right-radius: 7px;
+    border-bottom: 1px solid #334155;
+}
+
+QSpinBox::down-button {
+    subcontrol-position: bottom right;
+    border-bottom-right-radius: 7px;
+}
+
+QSpinBox::up-button:hover,
+QSpinBox::down-button:hover {
+    background-color: #2563eb;
+    border-color: #38bdf8;
+}
+
+QSpinBox::up-button:pressed,
+QSpinBox::down-button:pressed {
+    background-color: #0f766e;
+}
+
+QSpinBox::up-arrow {
+    image: url("__SPINBOX_UP_ICON__");
+    width: 12px;
+    height: 12px;
+}
+
+QSpinBox::down-arrow {
+    image: url("__SPINBOX_DOWN_ICON__");
+    width: 12px;
+    height: 12px;
+}
+
+QSpinBox::up-arrow:disabled,
+QSpinBox::down-arrow:disabled {
+    opacity: 0.45;
+}
+
 QSpinBox:hover,
 QComboBox:hover,
 QPushButton:hover {
